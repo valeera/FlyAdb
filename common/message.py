@@ -6,28 +6,38 @@ import re
 import sys
 import os
 from common import Common
-
+from automator.uiautomator import Device
+    
 class Message(Common):
 
     """Provide common functions for scripts, such as launching activity."""
     def __init__(self, device, log_name):
         Common.__init__(self, device,log_name)
-        self.msgs = {'Audio':"4",'Video':"3",'Photo':"2",'Text':"1"}
-                   
-    def enter_message(self):
+        self.msgs = {'Audio':"4",'Video':"3",'Photo':"2",'Text':"1"} 
+           
+    def enter(self):
         """Launch browser.
         """
         self.logger.debug('enter Message')
         if self.device(resourceId= self.appconfig.id("Message","id_enter")).wait.exists(timeout=2000):
             return True
         self.start_app("Messaging")
-        if self.device(resourceId= self.appconfig.id("Message","id_enter")).wait.exists(timeout=2000):
+        if self.device(resourceId = self.appconfig.id("Message","id_enter")).wait.exists(timeout=2000):
             return True
         else:
             self.logger.warning('Launch Message fail')
             return False
         return True
-         
+    
+    def setup(self):  
+        for k,v in self.msgs:
+            print k,v
+            
+        if self.enter():        
+            if self.device(resourceId="com.android.mms:id/empty").exists:
+                self.sms_Send(1,"10010")
+        pass
+       
     def back_to_message(self):
         """back to message list .
         """  
@@ -41,32 +51,51 @@ class Message(Common):
                 self.device(text="OK").click()
         else:
             self.logger.warning('Back to message list fail')
-            
+
+    def send_pic(self,number):
+        """send a message(SMS)
+        argv: (str)number -- the telephone number you want to send
+              (str)content -- SMS content
+        """
+        if self.enter():
+            self.device(resourceId=self.appconfig.id("Message","id_new")).click()
+            input_text = self.device(className='android.widget.MultiAutoCompleteTextView')
+            if input_text.wait.exists(timeout = self.timeout):
+                self.logger.debug('input phone number:'+str(number))
+                input_text.set_text(str(number))
+                self.device.delay(2)
+                self.device(resourceId=self.appconfig.id("Message","id_share")).click()
+                if self.device(resourceId="com.android.mms:id/share_panel").wait.exists(timeout=self.timeout):
+                    if self.device(text="Pictures").wait.exists(timeout=self.timeout):
+                        self.device(text="Pictures").click()
+                        if self.device(text="Capture picture").wait.exists(timeout=self.timeout):
+                            self.device(text="Capture picture").click()
+                            if self.device(description="Shutter").wait.exists(timeout=self.timeout):
+                                self.device(description="Shutter").click()
+
     def sms_Send(self,number,content = ""):
         """send a message(SMS)
         argv: (str)number -- the telephone number you want to send
               (str)content -- SMS content
         """
-        if self.enter_message():
+        if self.enter():
             self.device(resourceId=self.appconfig.id("Message","id_new")).click()
             input_text = self.device(className='android.widget.MultiAutoCompleteTextView')
-            if input_text.wait.exists(timeout = 2000):
+            if input_text.wait.exists(timeout = self.timeout):
                 self.logger.debug('input phone number:'+str(number))
                 input_text.set_text(str(number))
-#             'Type Name or Number'
                 self.device.delay(2)
                 if content != "":
                     self.logger.debug('input sms content:'+content)
                     self.device(className='android.widget.EditText').click()
                     self.device.delay(2)
-                #self._device.click(className='android.widget.EditText')
-    #                 self._device.shell_dos("adb -s "+self._device.get_device_serial()+" shell input text "+content)
                     self.device(className='android.widget.EditText').set_text(content)
                     self.device.delay(2)
                 self.logger.debug('send')
-                self.device(resourceId=self.appconfig.id("Message","id_send")).click()
+                #self.device(resourceId=self.appconfig.id("Message","id_send_sms")).click()
+                self.device(description=self.appconfig("Message","send")).click()
                 self.device.delay(1)
-            if not self.device(text='SENDING…').wait.exists(timeout == 10000):
+            if self.device(text='SENDING?').wait.gone(timeout = 10000):
 #                 and (not self.device(resourceId ='com.android.mms:id/delivered_indicator').wait.exists(timeout=10000)) 
                 self.logger.debug('SMS send success!!!')
                 self.device.press.back()
@@ -85,19 +114,17 @@ class Message(Common):
               (str)subject -- MMS subject
               pic\video\audio -- attachment of the message
         """
-        if self.enter_message():
-            self._device(resourceId='com.android.mms:id/action_compose_new').click()
-            self._device.delay(2)
-            self._logger.debug('input phone number:'+number)
-            self._device(text='To').set_text(number)
-            self._device.delay(3)
-            self._logger.debug('input sms content:'+content)
-            self._device(className='android.widget.EditText').click()
-            self._device.delay(2)
-            self._device.shell_dos("adb -s "+self._device.get_device_serial()+" shell input text "+content)
-            self._device.delay(2)
-            self._device.press.menu()
-            self._device.delay(2)
+        if self.enter():
+            self.device(resourceId='com.android.mms:id/action_compose_new').click()
+            self.device.delay(2)
+            self.logger.debug('input phone number:'+number)
+            self.device(text='To').set_text(number)
+            self.device.delay(3)
+            self.logger.debug('input sms content:'+content)
+            self.device(className='android.widget.EditText').click()
+            self.device.delay(2)
+            self.device.press.menu()
+            self._evice.delay(2)
             if self._device(text='Add subject').exists:
                 self._device(text='Add subject').click()
                 self._device.delay(3)
@@ -399,8 +426,45 @@ class Message(Common):
                     self.enter_message()
                     self.back_to_message()
         self.logger.debug("Open %s Msg Test complete." % msg_type)
-   
+
+class UIParser():
+    @staticmethod
+    def nest(self,func):
+        def wrapper(*args,**kwargs):
+            print args
+            func(args)
+        return wrapper
+    @staticmethod
+    def nestpaser(obj,params):
+        device = obj if isinstance(obj,Device) else obj.device
+        def listfoo(param):       
+            if not param.has_key("id") or not param.has_key("content"):
+                return False
+            select = device(**{param["id"]:param["content"]})       
+            action=select.wait.exists(timeout = 5000) if not param.has_key("wait") or (param.has_key("wait") and param["wait"]) else True
+            if action:
+                getattr(select,"click")(None) if not param.has_key("action") else getattr(select,param["action"]["type"])(**param["action"]["param"] if param["action"].has_key("param") else {})
+            return action    
+        for param in params:
+            if isinstance(param,list):
+                UIParser.nestpaser(obj,param)
+            else:
+                if not listfoo(param):
+                    return False
+        return True
+        
 if __name__ == '__main__':
-    a = Message("56c051e1","Message")
-    a.delete_extra_msg()
+    
+    a = Message("a7c0c64c","Message")
+    #print a.setup()
+
+    
+    picture = [
+            {"id":"resourceId","content":"com.android.mms:id/action_compose_new"},
+            {"id":"className","content":"android.widget.MultiAutoCompleteTextView","action":{"type":"set_text","param":"1"}},           
+            {"id":"resourceId","content":"org.codeaurora.snapcam:id/shutter_button","action":{"type":"click"}},
+            {"id":"resourceId","content":"org.codeaurora.snapcam:id/btn_done"},
+            {"id":"resourceId","content":"com.android.mms:id/send_button_mms"},
+            ]
+    print UIParser.nestpaser(a,picture)
 

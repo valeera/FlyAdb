@@ -1,13 +1,14 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 import sys
 import os
 from ConfigParser import ConfigParser
 
 class Configs(object):
-    def __init__(self, module):
+    def __init__(self, module,subconfig = None):
         self.config = ConfigParser()
-        self.config.read(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"configure","%s.ini"%module))
+        m =  os.path.join(os.path.join(subconfig), "%s.ini"%module) if subconfig else "%s.ini"%module
+        self.config.read(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"configure",m))
     def get(self,section,option):
         """return an string value for the named option."""
         try:
@@ -29,7 +30,6 @@ class AppConfig(Configs):
 
 class GetConfigs(object):
     """Get a option value from a given section."""
-    
     def __init__(self, module):
         self.commonconfig = ConfigParser()
 #         self.commonconfig.read(sys.path[-1] + "\\common.ini")
@@ -41,14 +41,14 @@ class GetConfigs(object):
     def getstr(section, option, filename, exc=None):
         """return an string value for the named option."""
         config = ConfigParser()
-        try:          
+        try:
 #             config.read(sys.path[-1] + "\\"+filename + ".ini")
             config.read(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"configure","%s.ini"%filename))
             return config.get(section,option)
         except Exception,e:
             print e
             return exc
-    @staticmethod        
+    @staticmethod
     def getint(section, option, filename, exc=0):
         """return an integer value for the named option.
         return exc if no the option. 
@@ -60,7 +60,7 @@ class GetConfigs(object):
             return config.getint(section, option)
         except:
             return exc
-        
+
     def get_test_times(self):
         """return a dict with name:value for each option
         in the section.
@@ -75,6 +75,7 @@ class GetConfigs(object):
         item = config.items(self.module)
         return dict(item)
 
-   
+
 if __name__ == '__main__':
-    print sys.path[-1]
+    config = Configs("configure","appinfo")
+    print config

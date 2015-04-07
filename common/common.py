@@ -16,6 +16,22 @@ from automator.adb import Adb
 import random
 from configs import AppConfig
 
+from functools import wraps
+ 
+def timethis(func):
+    '''
+    Decorator that reports the execution time.
+    '''
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(func.__name__, end-start)
+        return result
+    return wrapper
+
+
 def create_folder():
     """Create folder to save pic & log.     
     Return a folder path or None
