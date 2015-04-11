@@ -13,8 +13,8 @@ from common.settings import Settings
 class TestMedia(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        serino = "MDEVICE"
-        #serino = "56c051e1"
+        #serino = "MDEVICE"
+        serino = "a7c0c6cf"
         if len(sys.argv)>1:         
             serino = sys.argv[1] 
         cls.mod = Media(serino, "Media")

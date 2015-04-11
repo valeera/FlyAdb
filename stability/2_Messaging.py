@@ -13,8 +13,8 @@ from common.settings import Settings
 class TestMessage(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        serino = "MDEVICE"
-        #serino = "56c051e1"
+        #serino = "MDEVICE"
+        serino = "a7c0c6cf"
         if len(sys.argv)>1:         
             serino = sys.argv[1] 
         cls.mod = Message(serino, "Message")
@@ -38,7 +38,7 @@ class TestMessage(unittest.TestCase):
     def testFwdMsg2G(self):
         if int(self.mod.dicttesttimes.get("SMS2G".lower(),0)) != 0:
             self.set.switch_network("2G")
-            self.mod.enter_message()
+            self.mod.enter()
         self.mod.case_forward_msg('Text',int(self.mod.dicttesttimes.get("SMS2G".lower(),0)))
         self.mod.case_forward_msg('Photo',int(self.mod.dicttesttimes.get("Pic2G".lower(),0)))
         self.mod.case_forward_msg('Video',int(self.mod.dicttesttimes.get("Video2G".lower(),0)))        
@@ -47,7 +47,7 @@ class TestMessage(unittest.TestCase):
     def testFwdMsg3G(self):
         if int(self.mod.dicttesttimes.get("SMS3G".lower(),0)) != 0:
             self.set.switch_network("3G")
-            self.mod.enter_message()
+            self.mod.enter()
         self.mod.case_forward_msg('Text',int(self.mod.dicttesttimes.get("SMS3G".lower(),0)))
         self.mod.case_forward_msg('Photo',int(self.mod.dicttesttimes.get("Pic3G".lower(),0)))
         self.mod.case_forward_msg('Video',int(self.mod.dicttesttimes.get("Video3G".lower(),0)))        
@@ -56,7 +56,7 @@ class TestMessage(unittest.TestCase):
     def testFwdMsgLTE(self):
         if int(self.mod.dicttesttimes.get("SMSlTE".lower(),0)) != 0:
             self.set.switch_network("ALL")
-            self.mod.enter_message()
+            self.mod.enter()
         self.mod.case_forward_msg('Text',int(self.mod.dicttesttimes.get("SMSlTE".lower(),0)))
         self.mod.case_forward_msg('Photo',int(self.mod.dicttesttimes.get("PicLTE".lower(),0)))
         self.mod.case_forward_msg('Video',int(self.mod.dicttesttimes.get("VideoLTE".lower(),0)))        
@@ -64,7 +64,7 @@ class TestMessage(unittest.TestCase):
      
     def testOpenMsg(self):
         times = int(self.mod.dicttesttimes.get("OpenTimes".lower(),0))
-        self.mod.enter_message()
+        self.mod.enter()
         self.mod.case_open_msg('Text',times)
         self.mod.case_open_msg('Photo',times)
         self.mod.case_open_msg('Video',times)

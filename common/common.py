@@ -7,6 +7,7 @@ import time
 import re
 from datetime import datetime
 libpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 if not libpath in sys.path:
     sys.path.append(libpath)
 print libpath
@@ -17,7 +18,6 @@ import random
 from configs import AppConfig
 
 from functools import wraps
- 
 def timethis(func):
     '''
     Decorator that reports the execution time.
@@ -31,6 +31,71 @@ def timethis(func):
         return result
     return wrapper
 
+class UIParser():
+    @staticmethod
+    def nest(self,func):
+        def wrapper(*args,**kwargs):
+            print args
+            func(args)
+        return wrapper
+    @staticmethod
+    def run(obj,params,exceptfunc = None):
+        device = obj if isinstance(obj,Device) else obj.device
+        def listfoo(param):
+            resault = True
+            if isinstance(param["content"],list):
+                for content in param["content"]:
+                    param_tmp = param
+                    param_tmp["content"]=content
+                    resault = resault and listfoo(param)
+            elif param["id"] == "meta":
+                getattr(obj,param["content"])(*param["action"]["param"] if param.has_key("action") and param("action").has_key("param") else [])
+            else:
+                select = device(**{param["id"]:param["content"]})
+                action=select.wait.exists(timeout = 5000) if not param.has_key("wait") or (param.has_key("wait") and param["wait"]) else True
+                if action and not (param.has_key("action") and param["action"]==None):
+                    getattr(select,"click")(None) if not param.has_key("action") else getattr(select,param["action"]["type"])(*param["action"]["param"] if param["action"].has_key("param") else [])
+                    time.sleep(param["action"]["delay"] if param.has_key("aciton") and param["action"].has_key("delay") else 0)
+                resault = resault and action
+            return resault
+        
+        def dictfoo(param):
+            resault = True    
+            if not param.has_key("id"):
+                return False   
+            if isinstance(param["id"],list):
+                for content in param["id"]:
+                    param_tmp = param
+                    param_tmp["id"]=content
+                    if param["id"].has_key("action"):
+                        param_tmp["action"]=param["action"]
+                    resault = resault and listfoo(param)
+            elif param["id"].has_key("meta"):
+                getattr(obj,param["id"]["meta"])(*param["action"]["param"] if param.has_key("action") and param("action").has_key("param") else [])
+            else:
+                select = device(**param["id"])
+                action=select.wait.exists(timeout = 5000) if not param.has_key("wait") or (param.has_key("wait") and param["wait"]) else True
+                if action and not (param.has_key("action") and param["action"]==None):
+                    getattr(select,"click")(None) if not param.has_key("action") else getattr(select,param["action"]["type"])(*param["action"]["param"] if param["action"].has_key("param") else [])
+                    time.sleep(param["action"]["delay"] if param.has_key("aciton") and param["action"].has_key("delay") else 0)
+                resault = resault and action
+            return resault
+        
+        for param in params:
+            if isinstance(param,list):
+                UIParser.run(obj,param)
+            else:
+                if param.has_key("id") and isinstance(param["id"],dict):
+                    if not dictfoo(param):
+                        print "%s error!"%param
+                        exceptfunc() if (exceptfunc) else None
+                        return False
+                elif param.has_key("id") and param.has_key("content") and not isinstance(param["id"],dict):
+                    if not listfoo(param):
+                        print "%s error!"%param
+                        exceptfunc() if (exceptfunc) else None
+                        return False  
+        return True
 
 def create_folder():
     """Create folder to save pic & log.     
@@ -187,8 +252,19 @@ class Common(object):
         if b_desk and self.device(text=name).wait.exists(timeout = 2000):
             self.device(text=name).click()
             return True
+        elif b_desk and self.device(description=name).wait.exists(timeout = 2000):
+            self.device(text=name).click()
+            return True
         elif self.device(description="ALL APPS").exists:
             self.device(description="ALL APPS").click()
+            self.device().fling.horiz.toBeginning()
+            for loop in range(5):  
+                if self.device(description=name).exists:
+                    self.device(description=name).click()
+                    return True
+                self.device().fling.horiz.forward()  
+        elif self.device(description="Apps").exists:
+            self.device(description="Apps").click()
             self.device().fling.horiz.toBeginning()
             for loop in range(5):  
                 if self.device(description=name).exists:

@@ -120,7 +120,7 @@ class Media():
                     if self.camera.preview():
                         if self.device(resourceId = self.appconfig.id("Camera","id_view")).child(className = "android.widget.ImageView",index=1).wait.exists(timeout = 2000):
                             self.device.click(600,600)
-                        if self.device(resourceId = "com.tct.camera:id/filmstrip_bottom_control_share").wait.exists(timeout = 2000):  
+                        if self.device(description = "Share with").wait.exists(timeout = 2000):  
                             self.logger.info("Trace Success Loop "+ str(loop+1))
                             self.suc_times += 1
                         else:
@@ -269,7 +269,7 @@ class Media():
 #             common.common.log_traceback(traceback.format_exc())
   
 if __name__ == '__main__':
-    a = Media("56cf51f0","Media")      
+    a = Media("a7c0c6cf","Media")      
     a.record_audio(1)
     a.play_audio(1)
     a.del_audio(1)

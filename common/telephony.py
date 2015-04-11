@@ -16,7 +16,7 @@ class Telephony(Common):
         self.logger.debug("Enter Dialer")
         if self.device(resourceId= self.appconfig.id("Dialer","id_enter")).exists:
             return True
-        self.start_app("Call")
+        self.start_app("Phone")
         self.device.delay(2)
         if self.device(resourceId= self.appconfig.id("Dialer","id_enter")).exists:
             return True
@@ -45,6 +45,22 @@ class Telephony(Common):
                 return True
             self.device.press.back() 
             self.device.delay(1)
+        return False
+
+    def setup_contacts(self):
+        self.logger.debug("setup Contacts")
+        self.adb.cmd("push",os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"File"), '/sdcard/')
+        self.enter_contacts()
+        contacts = [
+                {"id":{"description":"More options"}},
+                {"id":"text","content":["Import/export","Import from storage","PHONE"]}
+                ]
+
+        store = [
+                {"id":"description","content":"add new contact"},
+                {"id":{"text":"PHONE"}}
+                ]
+        UIParser.run(self, [contacts,store],self.back_to_contact)
         return False
 
     def get_contacts_num(self):
@@ -107,6 +123,23 @@ class Telephony(Common):
          argv:(str)number -- the number you want to call
         '''
         self.logger.debug("Dial Number %s." % number)
+        
+        step = [
+                {"id":{"text":'Speed Dial'}},
+                {"id":{"description":'dial pad'}},             
+                {"id":{"resourceId":"com.android.dialer:id/digits"},"action":{"type":"set_text","param":[number]}},                
+                {"id":{"description":'dial'}}, 
+                ]
+        UIParser.run(self, step, self.back_to_contact)
+        if self.device(description='End').wait.exists(timeout=self.timeout):
+            self.logger.debug('Outgoing call success from dialer')
+            self.device(description='End').click()
+            return True
+        else:
+            self.logger.debug('Outgoing call fail from dialer')
+            return False        
+        
+        '''legency
         self.device(text='Speed dial').click()    
         self.device.delay(2)
         self.device(description ='Dial pad').click()
@@ -121,7 +154,8 @@ class Telephony(Common):
         else:
             self.logger.debug('Outgoing call fail from dialer')
             return False
-        
+        '''
+       
     def _call_history(self):
         self.logger.debug('call from calllog')
         self.device(text='Recents').click()
@@ -143,7 +177,7 @@ class Telephony(Common):
     def _call_contact(self,Index):
         '''select a contact for call
         '''
-        contact_name = "Autotest%02d" % (Index+1)
+        contact_name = "0Autotest%02d" % (Index+1)
         self.logger.debug('make call from contact %s' %contact_name)
         if self.device(text = "All contacts", selected = "false").exists:
             self.device(text = "All contacts").click()
@@ -202,29 +236,20 @@ class Telephony(Common):
         self.enter_contacts()
         for loop in range(times):
             try:
-                if not self.device(description = "Add new contact").exists:
-                    self.enter_contacts()
-                self.device(description = "Add new contact").click()
-                self.device.delay(2)
-                if self.device(resourceId = "com.android.contacts:id/add_account_button").exists:
-                    self.device(text = "Phone-only, unsynced").click()
-                    self.device.delay(2)
-                if self.device(resourceId = "com.android.contacts:id/title", text = "Add new contact").exists:
-                    name = random_name(loop)
-                    self.device(className = "android.widget.EditText", text = "Name").set_text(name)
-                    self.device.delay(2)
-                    self.device(className = "android.widget.EditText", text = "Phone").set_text("10010")
-                    self.device.delay(2)
-                    self.device(resourceId = "com.android.contacts:id/save_menu_item").click()
-                    self.device.delay(2)       
-                    if self.device(text = name).wait.exists(timeout=self.timeout):
-                        self.logger.info("Trace Success Loop "+str(loop+1))
-                        self.suc_times += 1
-                        self.back_to_contact()
-                        self.device.delay(1)
-                    else:
-                        self.save_fail_img()
-                        self.back_to_contact()
+                if not self.device(description = "add new contact").exists:
+                    self.enter_contacts()      
+                name = random_name(loop)       
+                step = [
+                        {"id":{"description":"add new contact"}},
+                        {"id":{"text":"Name","className":"android.widget.EditText"},"action":{"type":"set_text","param":[name]}},
+                        {"id":{"text":"Phone","className":"android.widget.EditText"},"action":{"type":"set_text","param":["10086"]}},               
+                        {"id":{"description":"Done"}}           
+                        ]
+                if UIParser.run(self,step, self.back_to_contact)==True and self.device(text = name).wait.exists(timeout=self.timeout):
+                    self.logger.info("Trace Success Loop "+str(loop+1))
+                    self.suc_times += 1
+                    self.back_to_contact()
+                    self.device.delay(1)
                 else:
                     self.save_fail_img()
                     self.back_to_contact()
@@ -245,18 +270,15 @@ class Telephony(Common):
         for loop in range(times):
             try:
                 if self.device(text = "All contacts").exists:     
-                    self.device(resourceId="android:id/list").child(index=2).child(className="android.widget.ImageView").click()
-                    index_name = self.device(resourceId="android:id/list").child(index=2).child(index=0).get_text()
-                    contact_name = self.device(resourceId="android:id/list").child(index=2).child(resourceId="com.android.contacts:id/cliv_name_textview").get_text()
-                    self.logger.debug("Get contact name is %s:%s" %(index_name,contact_name))
-                    self.device.delay(2)
-                    if self.device(resourceId = "com.android.contacts:id/menu_delete").exists:
-                        self.logger.debug("Selected one contact")
-                        self.device(resourceId = "com.android.contacts:id/menu_delete").click()
-                    if self.device(text = "OK").wait.exists(timeout = 3000):
-                        self.logger.debug("Delete selected contact")
-                        self.device(text = "OK").click()
-                        self.device.delay(2)
+                    self.device(resourceId="android:id/list").child(index=3).click()
+                    contact_name = self.device(resourceId="com.android.contacts:id/large_title").get_text()
+                    self.logger.debug("Get contact name is %s" %(contact_name))      
+                    step = [
+                            {"id":{"resourceId":'com.android.contacts:id/menu_edit'}},
+                            {"id":{"description":'More options'}}, 
+                            {"id":"text","content":['Delete','OK']},     
+                            ]
+                    UIParser.run(self, step, self.back_to_contact)
                     if not self.device(text = contact_name).exists:
                         self.logger.info("Trace Success Loop "+str(loop+1))
                         self.suc_times += 1
@@ -318,6 +340,7 @@ class Telephony(Common):
                       
          
 if __name__ == '__main__':
-    a = Telephony("56c05072","Telephony")
-    a.delete_contact(5)
-
+    a = Telephony("a7c0c6cf","Telephony")
+    #a.delete_contact(2)
+    a.add_contact(2)                             
+    

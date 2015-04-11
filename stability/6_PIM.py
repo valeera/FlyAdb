@@ -13,8 +13,8 @@ from common.configs import GetConfigs
 class TestPim(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        serino = "MDEVICE"
-        #serino = "56c051e1"
+        #serino = "MDEVICE"
+        serino = "a7c0c6cf"
         if len(sys.argv)>1:         
             serino = sys.argv[1] 
         cls.mod = Schedule(serino, "Pim")
@@ -39,25 +39,27 @@ class TestPim(unittest.TestCase):
         times = int(self.mod.dicttesttimes.get("add_calendar",0))
 #         self.assertTrue(times>0)
         self.mod.add_calendars(times)
-   
+    
     def testDelCalendar(self):
         times = int(self.mod.dicttesttimes.get("add_calendar",0))
 #         self.assertTrue(times>0)
         self.mod.delete_calendars(times)
-         
+
+    @unittest.skip("demonstrating skipping")      
     def testAddAlarm(self):
         times = int(self.mod.dicttesttimes.get("add_alarm",0))
 #         self.assertTrue(times>0)
         self.mod.add_alarms(times)
-            
+    @unittest.skip("demonstrating skipping")        
     def testDelAlarm(self):
         times = int(self.mod.dicttesttimes.get("del_alarm",0))
 #         self.assertTrue(times>0)
         self.mod.delete_alarms(times)
 
 if __name__ == '__main__':
-
-    suiteCase = unittest.TestLoader().loadTestsFromTestCase(TestPim)
+    loader = unittest.TestLoader()
+    loader.sortTestMethodsUsing = None
+    suiteCase = loader.loadTestsFromTestCase(TestPim)
     suite = unittest.TestSuite([suiteCase]) 
     unittest.TextTestRunner(verbosity=2).run(suite) 
     

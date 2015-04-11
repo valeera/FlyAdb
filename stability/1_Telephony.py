@@ -13,8 +13,8 @@ from common.settings import Settings
 class TestTelephony(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        serino = "MDEVICE"
-        #serino = "56c05003"
+        #serino = "MDEVICE"
+        serino = "a7c0c6cf"
         if len(sys.argv)>1:       
             serino = sys.argv[1] 
         cls.mod = Telephony(serino, "Telephony")

@@ -11,6 +11,8 @@ class Schedule(Common):
         if self.device(resourceId= self.appconfig.id("Calendar","id_enter")).wait.exists(timeout = self.timeout):
             return True
         self.start_app("Calendar")
+        if self.device(text= "Just a sec?").wait.exists(timeout = self.timeout):
+            self.device.press.back()    
         if self.device(resourceId= self.appconfig.id("Calendar","id_enter")).wait.exists(timeout = self.timeout):
             return True
         else:
@@ -58,6 +60,13 @@ class Schedule(Common):
         self.logger.debug('create a new event')
         if self.device(resourceId=self.appconfig.id("Calendar","id_floating_action_button")).exists:
             self.device(resourceId=self.appconfig.id("Calendar","id_floating_action_button")).click()
+        elif self.device(description=self.appconfig("Calendar","create_option")).exists:
+            self.device(description=self.appconfig("Calendar","create_option")).click()
+            if self.device(text = "New event").wait.exists(timeout = self.timeout):
+                self.device(text = "New event").click()
+                if self.device(text = "No calendars").wait.exists(timeout = 2000):
+                    self.device(text = "Cancel").click()                
+            
         self.logger.debug('input event name')
         self.device.delay(2)
         self.device(text= self.appconfig("Calendar","create_event_name_text")).set_text(event_name)
@@ -160,7 +169,7 @@ class Schedule(Common):
 
     def add_calendars(self,times):
         self.logger.debug('Add an Calendar ' + str(times) + ' Times')
-        if self.enter_calendar():
+        if self.enter_calendar() and self.switch_view("Agenda"):
             for loop in range (times):
                 try:
                     if self.create_schedule(random_name(loop),loop):
@@ -229,8 +238,7 @@ class Schedule(Common):
         return True    
        
 if __name__ == '__main__':
-    a = Schedule("56c05072","Schedule")
-    for k in range(20):
-        a.add_calendars(5)
-        a.delete_calendars(5)
+    a = Schedule("a7c0c6cf","Schedule")
+    a.add_calendars(5)
+    #a.delete_calendars(5)
     

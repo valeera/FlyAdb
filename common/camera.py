@@ -102,7 +102,12 @@ class Camera(Common):
         """         
         self.logger.debug('take photo')
         filenumber = self.get_photo_number()
-        self.device(description=self.appconfig("Camera","shutter_action")).click()
+        if self.device(description= "Camera, video, or panorama selector").wait.exists(timeout = self.timeout):
+            self.device(description= "Camera, video, or panorama selector").click()
+            if self.device(description= "Switch to photo").wait.exists(timeout = self.timeout):
+                self.device(description= "Switch to photo").click()
+        if self.device(resourceId=self.appconfig.id("Camera","id_shutter")).wait.exists(timeout = self.timeout):
+            self.device(resourceId=self.appconfig.id("Camera","id_shutter")).click()
         self.device.delay(5)
         if self.get_photo_number() > filenumber:
             return True
@@ -114,10 +119,10 @@ class Camera(Common):
         """enter preview mode
         """   
         self.logger.debug('enter preview mode')
-        self.adb.shell('input swipe 1050 700 50 700')
+        self.adb.shell('input swipe 650 600 50 600')
         maxtimes=0
         while not self.device(resourceId=self.appconfig.id("Camera","id_action_delete")).wait.exists(timeout = 2000):
-            self.adb.shell('input swipe 1050 700 50 700')
+            self.adb.shell('input swipe 650 600 50 600')
             maxtimes+=1
             if maxtimes>5:
                 self.logger.debug('enter preview mode failed!')
@@ -130,10 +135,15 @@ class Camera(Common):
         """          
         if self.preview():
             filenumber = self.get_photo_number()
-            self.adb.shell('input swipe 540 800 540 1700')
-            self.device.delay(1)
-            self.device.click(540,200)
-            self.device.delay(4)
+            if self.device(resourceId=self.appconfig.id("Camera","id_action_delete")).wait.exists(timeout = 2000):
+                self.device(resourceId=self.appconfig.id("Camera","id_action_delete")).click()
+            else:
+                self.adb.shell('input swipe 540 800 540 1700')
+                self.device.delay(1)            
+                self.device.click(540,200)
+        if self.device(text = "Deleted").wait.exists(timeout = 2000):
+            self.device(text = "Deleted").click()
+        self.device.delay(5)
         if self.get_photo_number() < filenumber:
             return True
         else:
@@ -145,13 +155,20 @@ class Camera(Common):
         argv: (int)recordTime --time of the video
         """ 
         self.logger.debug('record video')
-        filenumber = self.get_video_number()
-        self.device(resourceId=self.appconfig.id("Camera","id_camera_video_switch_icon")).click()
+        filenumber = self.get_video_number()   
+        if self.device(description= "Camera, video, or panorama selector").wait.exists(timeout = self.timeout):
+            self.device(description= "Camera, video, or panorama selector").click()
+            if self.device(description= "Switch to video").wait.exists(timeout = self.timeout):
+                self.device(description= "Switch to video").click()
+            if self.device(resourceId=self.appconfig.id("Camera","id_shutter")).wait.exists(timeout = self.timeout):
+                self.device(resourceId=self.appconfig.id("Camera","id_shutter")).click()
+        else:      
+            self.device(resourceId=self.appconfig.id("Camera","id_camera_video_switch_icon")).click()
         if not self.device(resourceId = self.appconfig.id("Camera","id_recording_time")).wait.exists(timeout = 2000):
             self.logger.warning("Fail to start recording!")
             return False
         self.device.delay(duration)
-        self.device(resourceId=self.appconfig.id("Camera","id_camera_video_switch_icon")).click()
+        self.device(resourceId=self.appconfig.id("Camera","id_shutter")).click()
         self.device.delay(5)    
         if self.get_video_number() > filenumber:
             return True
@@ -190,10 +207,15 @@ class Camera(Common):
         """         
         if self.preview():
             filenumber = self.get_video_number()
-            self.adb.shell('input swipe 540 800 540 1700')
-            self.device.delay(1)
-            self.device.click(540,200)
-            self.device.delay(4)
+            if self.device(resourceId=self.appconfig.id("Camera","id_action_delete")).wait.exists(timeout = 2000):
+                self.device(resourceId=self.appconfig.id("Camera","id_action_delete")).click()
+            else:
+                self.adb.shell('input swipe 540 800 540 1700')
+                self.device.delay(1)
+                self.device.click(540,200)
+            if self.device(text = "Deleted").wait.exists(timeout = 2000):
+                self.device(text = "Deleted").click()
+            self.device.delay(5)
             if self.get_video_number() < filenumber:
                 return True
             else:
@@ -201,12 +223,14 @@ class Camera(Common):
                 return False
 
 if __name__ == '__main__':
-    a = Camera("56c051e1","Media")
+    a = Camera("a7c0c6cf","Media")
     a.enter()
 #     a.switch("video")
 #     a.switch("video")
 #     a.switch("photo")
-#     a.take_photo()
+    a.take_photo()
+    a.open_photo()
 #     a.del_picture()
-    a.play_video(10)
+    a.record_video(10)
+    a.play_video()
     a.del_video()

@@ -128,8 +128,8 @@ class MultiTask(Common):
 class TestMultiTask(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        serino = "MDEVICE"
-        #serino = "56c05003"
+        #serino = "MDEVICE"
+        serino = "a7c0c6cf"
         if len(sys.argv)>1:         
             serino = sys.argv[1] 
         cls.mod = MultiTask(serino, "Tasking")
@@ -154,7 +154,7 @@ class TestMultiTask(unittest.TestCase):
         self.mod.back_to_home()
         
     def testInteractionWithCall(self):
-        if(self.mod.make_call("10010")):
+        if(self.mod.make_call("10086")):
             self.mod.interaction(int(self.mod.dicttesttimes.get('ITERATIONS'.lower())))
             self.mod.end_call()
             

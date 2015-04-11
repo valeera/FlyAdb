@@ -3,7 +3,7 @@
 
 import re
 import sys
-from common import Common
+from common import Common,UIParser
 
 class Chrome(Common):
     '''
@@ -28,6 +28,16 @@ class Chrome(Common):
             return True
         else:
             return False
+ 
+    def setup(self):      
+        bookmark = [
+                    {"id":"description","content":["More options","Bookmark this page"]},
+                    {"id":{"text":"Save"}},
+                    {"id":"meta","content":"back_to_chrome"}
+                    ]
+        self.chrome_webpage("www.baidu.com")
+        UIParser.run(self,bookmark,self.back_to_chrome)
+        pass
         
     def back_to_chrome(self):
         self.logger.debug('Back Chrome')
@@ -193,6 +203,6 @@ class Chrome(Common):
         self.logger.debug('Download file Test complete')
     
 if __name__ == '__main__':
-    a = Chrome("56c051e1","Chrome")
-    a.download_file(1,20)
+    a = Chrome("a7c0c6cf","Chrome")
+    a.setup()
     

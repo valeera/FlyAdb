@@ -38,7 +38,7 @@ class Adb(object):
         if serial.find(" ") > 0:  # TODO how to include special chars on command line
             serial = "'%s'" % serial
         cmd_line = ["-s", serial] + list(args)
-        #print cmd_line
+        print cmd_line
         if self.adb_server_port:  # add -P argument
             cmd_line = ["-P", str(self.adb_server_port)] + cmd_line
         if self.adb_server_host:  # add -H argument

@@ -14,8 +14,8 @@ from common.statusbar import StatusBar
 class WifiEndurance(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        serino = "MDEVICE"
-        #serino = "56c05003"
+        #serino = "MDEVICE"
+        serino = "a7c0c6cf"
         if len(sys.argv)>1:       
             serino = sys.argv[1] 
         cls.mod = Wifi(serino, "Set_WifiConnect")

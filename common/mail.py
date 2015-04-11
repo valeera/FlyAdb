@@ -4,53 +4,38 @@
 """
 import re
 import sys
-from common import Common
+from common import Common,UIParser
 
 
 class Email(Common):
 
     """Provide common functions involved email."""  
 
-#     def setup(self,accountName,password):
-#         """login email account
-#         TOD OD!!!!!
-#         """ 
-#         self.logger.debug('set email account')
-#         self.device.delay(2)
-#         if not self.device(text='Account setup').exists:
-#             self.logger.debug('Launch Message fail')
-#         else:
-#             if self.device(text='Email address').exists:
-#                 self.logger.debug('input account name: %s',accountName)
-#                 self.device(text='Email address').set_text(accountName)
-#                 self.device.delay(3)
-#                 if self.device(className='android.widget.EditText',index=4).exists:
-#                     self.logger.debug('input pass word: %s',password)
-#                     self.device(className='android.widget.EditText',index=4).set_text(password)
-#                     self.device.delay(3)
-#                     self.device(text='Next').click()
-#                     if self.device(text='Next').wait.exists(timeout=60000):
-#                         self.device(text='Next').click()
-#                     if self.device(description='Your name (displayed on outgoing messages)').wait.exists(timeout=60000):
-#                         self.logger.debug('input name: Tester')
-#                         self.device(description='Your name (displayed on outgoing messages)').set_text('Tester')
-#                         self.device.delay(5)
-#                     if self.device(text='Next').wait.exists(timeout=60000):
-#                         self.device(text='Next').click()
-#                         self.device.delay(2)
-#                     if self.device(text=accountName).exists:
-#                         self.logger.debug('email login success!!!')
-#                         return True
-#                     else:
-#                         self.device.press.home()
-#                         self.device.delay(2)
-#                         self.enter()
-#                         self.device.delay(2)
-#                         if self.device(text=accountName).wait.exists(timeout=60000):
-#                             self.logger.debug('email login success!!!')
-#                             return True
-#         self.logger.debug('email login fail')           
-#         return False
+    def setup(self,accountName,password):
+        self.enter()
+        step1 = [
+                {"id":{"resourceId":"com.android.email:id/account_email"},"action":{"type":"set_text","param":[accountName]}},
+                {"id":{"resourceId":"com.android.email:id/next"}},
+                {"id":{"text":"POP3"}},
+                {"id":{"resourceId":"com.android.email:id/regular_password"},"action":{"type":"set_text","param":[password]}},
+                {"id":{"resourceId":"com.android.email:id/next"}},
+                {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"set_text","param":["mail2.t"]}},                     
+                ]
+        if UIParser.run(self,step1, self.back_to_mainapp)==False:
+            return False
+        self.device(scrollable=True).scroll.vert.to(description="Next")  
+        step2 = [
+                {"id":{"description":"Next"}}                   
+                ]
+        if UIParser.run(self,step2, self.back_to_mainapp)==False:
+            return False
+
+        step3 = [
+                {"id":{"description":"Next"}}                   
+                ]
+        if UIParser.run(self,step2, self.back_to_mainapp)==False:
+            return False
+        return True
     
     def enter(self):
         """Launch email by StartActivity.
@@ -246,10 +231,8 @@ class Email(Common):
 
 #test--------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    a = Email("add6e685","Email")
+    a = Email("a7c0c6cf","Email")
+    #a.setup("atttest05@tcl.com", "Password001")
     a.open_email(2)
-
-    
-    
-    
+   
     

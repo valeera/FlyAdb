@@ -13,8 +13,8 @@ from common.settings import Settings
 class TestBrowser(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        serino = "MDEVICE"
-        #serino = "56c0501f"
+        #serino = "MDEVICE"
+        serino = "a7c0c6cf"
         cls.url = "http://122.225.253.188/"
         if len(sys.argv)>1:       
             serino = sys.argv[1] 
