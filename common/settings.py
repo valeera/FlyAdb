@@ -12,7 +12,7 @@ class Settings(Common):
          argv: the text of the settings option
         '''
         self.start_app("Settings")
-        if self.device(text=self.appconfig("Settings","settings")).wait.exists(timeout = 2000):
+        if self.device(text=self.appconfig("settings","Settings")).wait.exists(timeout = 2000):
             self.logger.debug("enter Settings")  
             if self.device(text=option).exists:
                 self.device(text=option).click()
@@ -22,7 +22,7 @@ class Settings(Common):
                     self.device(text=option).click()
                 else:
                     return False
-            if self.device(text=self.appconfig("Settings","settings")).wait.gone(timeout = 2000):
+            if self.device(text=self.appconfig("settings","Settings")).wait.gone(timeout = 2000):
                 self.logger.debug("enter "+option+" setting")
                 return True
         return False
@@ -31,7 +31,7 @@ class Settings(Common):
         """switch network to specified type.    
         argv: (str)type -- the type of network.    
         """
-        network_type = self.appconfig("Settings",type)
+        network_type = self.appconfig(type,"Settings")
         self.logger.debug("Switch network to %s:%s." % (type,network_type))
         if self.enter_settings(u"More…"):
             if self.device(text="Mobile networks").exists:
@@ -46,7 +46,7 @@ class Settings(Common):
 class Wifi(Settings): 
     
     def enter(self):
-        return self.enter_settings(self.appconfig("Settings","wifi"))
+        return self.enter_settings(self.appconfig("wifi","Settings"))
     
     def back_to_wifi(self):
         self.logger.debug('Back to Wi-Fi list')
@@ -216,7 +216,7 @@ class Airplane(Settings):
  
 class Bt(Settings):
     def enter(self):
-        return self.enter_settings(self.appconfig("Settings","bt"))
+        return self.enter_settings(self.appconfig("bt","Settings"))
        
     def switch(self):
         self.logger.debug('Switch bt')

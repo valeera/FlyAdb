@@ -9,16 +9,20 @@ if not libpath in sys.path:
     sys.path.append(libpath) 
 from common.browser import Browser
 from common.settings import Settings
-
+from common.configs import Configs
+from common.chrome import Chrome
 class TestBrowser(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        #serino = "MDEVICE"
-        serino = "a7c0c6cf"
+        serino = "MDEVICE"
+        #serino = "a7c0c6cf"
         cls.url = "http://122.225.253.188/"
         if len(sys.argv)>1:       
             serino = sys.argv[1] 
-        cls.mod = Browser(serino, "Browser")
+        if Configs("common").get("product","Info") == "Sprints":
+            cls.mod = Chrome(serino, "Browser")
+        else:
+            cls.mod = Browser(serino, "Browser")
         cls.set = Settings(cls.mod.device, "Settings")
     @classmethod
     def tearDownClass(cls):
@@ -38,7 +42,7 @@ class TestBrowser(unittest.TestCase):
     
     def testStability2G(self):
         if int(self.mod.dicttesttimes.get("ATTPage2G".lower(),0)) != 0:
-            self.set.switch_network("2G")
+            #self.set.switch_network("2G")
             self.mod.enter()
         self.mod.visit_att(int(self.mod.dicttesttimes.get("ATTPage2G".lower(),0)))
         self.mod.navigate(self.url,int(self.mod.dicttesttimes.get("ATTPage2G".lower(),0)))
@@ -46,7 +50,7 @@ class TestBrowser(unittest.TestCase):
 
     def testStability3G(self):
         if int(self.mod.dicttesttimes.get("ATTPage3G".lower(),0)) != 0:
-            self.set.switch_network("3G")
+            #self.set.switch_network("3G")
             self.mod.enter()
         self.mod.visit_att(int(self.mod.dicttesttimes.get("ATTPage3G".lower(),0)))
         self.mod.navigate(self.url,int(self.mod.dicttesttimes.get("Navigate3G".lower(),0)))
@@ -54,7 +58,7 @@ class TestBrowser(unittest.TestCase):
  
     def testStabilityLTE(self):
         if int(self.mod.dicttesttimes.get("ATTPageLTE".lower(),0)) != 0:
-            self.set.switch_network("ALL")
+            #self.set.switch_network("ALL")
             self.mod.enter()
         self.mod.visit_att(int(self.mod.dicttesttimes.get("ATTPageLTE".lower(),0)))
         self.mod.navigate(self.url,int(self.mod.dicttesttimes.get("NavigateLTE".lower(),0)))

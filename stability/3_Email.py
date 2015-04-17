@@ -31,28 +31,28 @@ class TestEmail(unittest.TestCase):
             cls.mod.logger.info("Result Pass Success Rate Is " + str(Rate) + '%')
 
     def setUp(self):
-        self.receiver = random.choice(self.mod.config.getstr("Email","Email_receiver","common").split(","))
+        self.receiver = random.choice(self.mod.config.getstr("Email_receiver","Email","common").split(","))
 
     def tearDown(self):
         self.mod.back_to_home()
  
     def testFWDMsg2G(self):
         if int(self.mod.dicttesttimes.get("SendBy2G".lower(),0)) != 0:
-            self.set.switch_network("2G")
+            #self.set.switch_network("2G")
             self.mod.enter()
         self.mod.send_email(self.receiver,False,int(self.mod.dicttesttimes.get("SendBy2G".lower(),0))) 
         self.mod.send_email(self.receiver,True,int(self.mod.dicttesttimes.get("SendBy2G".lower(),0)))    
   
     def testFWDMsg3G(self): 
         if int(self.mod.dicttesttimes.get("SendBy3G".lower(),0)) != 0:
-            self.set.switch_network("3G")
+            #self.set.switch_network("3G")
             self.mod.enter()
         self.mod.send_email(self.receiver,False,int(self.mod.dicttesttimes.get("SendBy3G".lower(),0))) 
         self.mod.send_email(self.receiver,True,int(self.mod.dicttesttimes.get("SendBy3G".lower(),0)))  
  
     def testFwdMsgLTE(self):
         if int(self.mod.dicttesttimes.get("SendByLTE".lower(),0)) != 0:
-            self.set.switch_network("ALL")
+            #self.set.switch_network("ALL")
             self.mod.enter()
         self.mod.send_email(self.receiver,False,int(self.mod.dicttesttimes.get("SendByLTE".lower(),0))) 
         self.mod.send_email(self.receiver,True,int(self.mod.dicttesttimes.get("SendByLTE".lower(),0))) 

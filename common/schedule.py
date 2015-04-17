@@ -8,12 +8,12 @@ class Schedule(Common):
     def enter_calendar(self):
         '''Launch calender by start activity.
         '''
-        if self.device(resourceId= self.appconfig.id("Calendar","id_enter")).wait.exists(timeout = self.timeout):
+        if self.device(resourceId= self.appconfig.id("id_enter","Calendar")).wait.exists(timeout = self.timeout):
             return True
         self.start_app("Calendar")
         if self.device(text= "Just a sec?").wait.exists(timeout = self.timeout):
             self.device.press.back()    
-        if self.device(resourceId= self.appconfig.id("Calendar","id_enter")).wait.exists(timeout = self.timeout):
+        if self.device(resourceId= self.appconfig.id("id_enter","Calendar")).wait.exists(timeout = self.timeout):
             return True
         else:
             return False  
@@ -21,7 +21,7 @@ class Schedule(Common):
     def back_to_calendar(self):
         self.logger.debug('Back to Calendar')
         for i in range(5):
-            if self.device(resourceId=self.appconfig.id("Calendar","id_enter")).exists:
+            if self.device(resourceId=self.appconfig.id("id_enter","Calendar")).exists:
                 break
             self.device.press.back()
             self.device.delay(1)
@@ -32,21 +32,21 @@ class Schedule(Common):
         """Switch to specified view.
         """
         def _check_view_type(strsort):
-            if (strsort == "Agenda" and self.device(resourceId= self.appconfig.id("Calendar","id_switch_agenda")).exists):
+            if (strsort == "Agenda" and self.device(resourceId= self.appconfig.id("id_switch_agenda","Calendar")).exists):
                 return True
             elif (strsort == "Week" and
-                self.device(resourceId= self.appconfig.id("Calendar","id_switch_week")).exists):
+                self.device(resourceId= self.appconfig.id("id_switch_week","Calendar")).exists):
                 return True
-            elif (strsort == "Month" and self.device(resourceId= self.appconfig.id("Calendar","id_switch_month")).exists):
+            elif (strsort == "Month" and self.device(resourceId= self.appconfig.id("id_switch_month","Calendar")).exists):
                 return True
-            elif (strsort == "Day" and self.device(textContains=self.appconfig("Calendar","switch_today"))):
+            elif (strsort == "Day" and self.device(textContains=self.appconfig("switch_today","Calendar"))):
                 return True
             else:
                 self.logger.warning("Not In %s." % strsort)
                 return False
         self.logger.debug("Switch to %s view." % strsort)
         if not _check_view_type(strsort):
-            self.device(resourceId= self.appconfig.id("Calendar","id_action_bar")).click()
+            self.device(resourceId= self.appconfig.id("id_action_bar","Calendar")).click()
             if self.device(text=strsort).wait.exists(timeout = self.timeout):
                 self.device(text=strsort).click()
                 self.device(text=strsort).wait.gone(timeout = self.timeout)
@@ -58,10 +58,10 @@ class Schedule(Common):
             
     def create_schedule(self, event_name, Index=1):
         self.logger.debug('create a new event')
-        if self.device(resourceId=self.appconfig.id("Calendar","id_floating_action_button")).exists:
-            self.device(resourceId=self.appconfig.id("Calendar","id_floating_action_button")).click()
-        elif self.device(description=self.appconfig("Calendar","create_option")).exists:
-            self.device(description=self.appconfig("Calendar","create_option")).click()
+        if self.device(resourceId=self.appconfig.id("id_floating_action_button","Calendar")).exists:
+            self.device(resourceId=self.appconfig.id("id_floating_action_button","Calendar")).click()
+        elif self.device(description=self.appconfig("create_option","Calendar")).exists:
+            self.device(description=self.appconfig("create_option","Calendar")).click()
             if self.device(text = "New event").wait.exists(timeout = self.timeout):
                 self.device(text = "New event").click()
                 if self.device(text = "No calendars").wait.exists(timeout = 2000):
@@ -69,7 +69,7 @@ class Schedule(Common):
             
         self.logger.debug('input event name')
         self.device.delay(2)
-        self.device(text= self.appconfig("Calendar","create_event_name_text")).set_text(event_name)
+        self.device(text= self.appconfig("create_event_name_text","Calendar")).set_text(event_name)
         self.device.delay(2)
         self.logger.debug('select calendar date')
         if not self.device(resourceId= "com.tct.calendar:id/start_date").exists:
@@ -78,10 +78,10 @@ class Schedule(Common):
             self.device(resourceId="com.tct.calendar:id/start_date").click()
         if self.device(resourceId="com.tct.calendar:id/animator").wait.exists(timeout=5000):
             self.device(resourceId="com.tct.calendar:id/animator").child(index=0).child(index=0).child(index=Index).click()
-        self.device(resourceId= self.appconfig.id("Calendar","id_done")).click()
+        self.device(resourceId= self.appconfig.id("id_done","Calendar")).click()
         self.device.delay(2)
         self.logger.debug('Save calendar')
-        self.device(resourceId= self.appconfig.id("Calendar","id_action_done")).click()
+        self.device(resourceId= self.appconfig.id("id_action_done","Calendar")).click()
         self.device.delay(2)    
         self.device(text="Agenda").click()
         self.device.delay(2)
@@ -103,9 +103,9 @@ class Schedule(Common):
         else:
             self.logger.warning("Cannot find the calendar %s" %name)
             return False
-        if self.device(description= self.appconfig("Calendar","delete_action")).wait.exists(timeout=5000):
-            self.device(description= self.appconfig("Calendar","delete_action")).click()
-            delete_confirm = self.appconfig("Calendar", "delete_confirm")
+        if self.device(description= self.appconfig("delete_action","Calendar")).wait.exists(timeout=5000):
+            self.device(description= self.appconfig("delete_action","Calendar")).click()
+            delete_confirm = self.appconfig("delete_confirm","Calendar")
             if self.device(text=delete_confirm).wait.exists(timeout = self.timeout):
                 self.device(text=delete_confirm).click()
                 self.device.delay(2)
@@ -116,7 +116,7 @@ class Schedule(Common):
     def enter_alarm(self):
         '''Launch alarm by start activity.
         '''
-        alarm = self.appconfig("Alarm","switch_alarm")
+        alarm = self.appconfig("switch_alarm","Alarm")
         if self.device(description=alarm).exists:
             self.device(description=alarm).click()
             self.device.delay(2)
@@ -133,12 +133,12 @@ class Schedule(Common):
     def add_alarm(self):
         """add an alarm without change.
         """
-        id_add = self.appconfig.id("Alarm","id_add")
+        id_add = self.appconfig.id("id_add","Alarm")
         self.logger.debug("Add an alarm without change.")
         if self.device(resourceId= id_add).exists:
             self.device(resourceId= id_add).click()
             self.device.delay(2)
-            self.device(text= self.appconfig("Alarm","add_comfirm")).click()
+            self.device(text= self.appconfig("add_comfirm","Alarm")).click()
             self.device.delay(2)
             for i in range(3):
                 if not self.device(resourceId="com.tct.timetool:id/onoff",checked=True).exists:
@@ -153,17 +153,17 @@ class Schedule(Common):
         '''Delete alarm.        
         '''
         self.logger.debug('delete a alarm')
-        delete_action = self.appconfig("Alarm", "delete_action")
+        delete_action = self.appconfig("delete_action","Alarm")
         if not self.device(description = delete_action).exists:
-            self.device(resourceId= self.appconfig.id("Alarm","delete_option")).click()
+            self.device(resourceId= self.appconfig.id("delete_option","Alarm")).click()
             self.device.delay(2)
+            print 1111111
             if not self.device(description = delete_action).exists:
                 self.logger.debug('delete alarm fail!')
                 return False
-        self.device(description = delete_action).click()
         self.device.delay(2)
-        delete_confirm = self.appconfig("Alarm","delete_confirm")
-        if self.device(text= delete_confirm).exists:
+        delete_confirm = self.appconfig("delete_confirm","Alarm")
+        if delete_confirm!=None and self.device(text= delete_confirm).exists:
             self.device(text= delete_confirm).click()
         return True
 

@@ -41,6 +41,24 @@ class UIParser():
     @staticmethod
     def run(obj,params,exceptfunc = None):
         device = obj if isinstance(obj,Device) else obj.device
+        def param_parser(param):
+            if isinstance(param, dict):
+                for k,v in param.items():
+                    if v == None:
+                        param.pop(k)
+            else:
+                for v in param:
+                    if v == None:
+                        param.remove(v)
+       
+        def error(param):
+            if param.has_key("assert") and param['assert'] == False:                       
+                return False
+            else:
+                print "%s error!"%param
+                exceptfunc() if (exceptfunc) else None
+                return True 
+                                
         def listfoo(param):
             resault = True
             if isinstance(param["content"],list):
@@ -49,8 +67,10 @@ class UIParser():
                     param_tmp["content"]=content
                     resault = resault and listfoo(param)
             elif param["id"] == "meta":
-                getattr(obj,param["content"])(*param["action"]["param"] if param.has_key("action") and param("action").has_key("param") else [])
+                resault = resault and getattr(obj,param["content"])(*param["action"]["param"] if param.has_key("action") and param["action"].has_key("param") else [])
             else:
+                if param_parser(param["id"])=={}:
+                    return True
                 select = device(**{param["id"]:param["content"]})
                 action=select.wait.exists(timeout = 5000) if not param.has_key("wait") or (param.has_key("wait") and param["wait"]) else True
                 if action and not (param.has_key("action") and param["action"]==None):
@@ -71,8 +91,10 @@ class UIParser():
                         param_tmp["action"]=param["action"]
                     resault = resault and listfoo(param)
             elif param["id"].has_key("meta"):
-                getattr(obj,param["id"]["meta"])(*param["action"]["param"] if param.has_key("action") and param("action").has_key("param") else [])
+                resault = resault and getattr(obj,param["id"]["meta"])(*param["action"]["param"] if param.has_key("action") and param["action"].has_key("param") else [])
             else:
+                if param_parser(param["id"])=={}:
+                    return True
                 select = device(**param["id"])
                 action=select.wait.exists(timeout = 5000) if not param.has_key("wait") or (param.has_key("wait") and param["wait"]) else True
                 if action and not (param.has_key("action") and param["action"]==None):
@@ -87,14 +109,12 @@ class UIParser():
             else:
                 if param.has_key("id") and isinstance(param["id"],dict):
                     if not dictfoo(param):
-                        print "%s error!"%param
-                        exceptfunc() if (exceptfunc) else None
-                        return False
+                        if (error(param)):
+                            return False
                 elif param.has_key("id") and param.has_key("content") and not isinstance(param["id"],dict):
                     if not listfoo(param):
-                        print "%s error!"%param
-                        exceptfunc() if (exceptfunc) else None
-                        return False  
+                        if (error(param)):
+                            return False
         return True
 
 def create_folder():
@@ -117,7 +137,7 @@ def createlogger(name):
     return a logger
     """
     config = GetConfigs("common")
-    lev_key = config.getstr("Default","LOG_FITER","common").upper()
+    lev_key = config.getstr("LOG_FITER","Default","common").upper()
     lev_dict = {"DEBUG": logging.DEBUG, "INFO": logging.INFO, 
                 "WARNING": logging.WARNING, "ERROR": logging.ERROR,
                 "CRITICAL": logging.CRITICAL}
@@ -148,7 +168,7 @@ def connect_device(device_name):
     device_id = environ.get(device_name)
     if device_id == None:
         device_id = device_name       
-    backend = Configs("common").get("Info","backend")
+    backend = Configs("common").get("backend","Info")
     logger.debug("Device ID is " + device_id + " backend is " + backend) 
     if backend.upper() == "MONKEY":
         from monkeyUser import MonkeyUser
@@ -190,7 +210,9 @@ class Common(object):
         self.logger = createlogger(mod)
         self.log_path = create_folder()
         self.config = GetConfigs("common")
-        self.appconfig = AppConfig("appinfo")
+        self.product = Configs("common").get("product","Info")
+        self.appconfig = AppConfig("appinfo",self.product)
+        self.appconfig.set_section(mod)
         self.adb = self.device.server.adb
         self.suc_times = 0
         try:
@@ -262,6 +284,9 @@ class Common(object):
                 if self.device(description=name).exists:
                     self.device(description=name).click()
                     return True
+                elif self.device(text=name).exists:
+                    self.device(text=name).click()
+                    return True                
                 self.device().fling.horiz.forward()  
         elif self.device(description="Apps").exists:
             self.device(description="Apps").click()
@@ -342,7 +367,16 @@ class Common(object):
             return False
              
 if __name__ == "__main__":
-    a = Common("56c051e1","Media")
-    a.start_app("Sound Recorder")
-                
-                
+    #a = Common("56c051e1","Media")
+    #a.start_app("Sound Recorder")
+
+    #product = Configs("common").get("Info","product")
+    
+    p = {"c":None,"a":1,"b":2}
+    def param_parser(param):
+        for k,v in param.items():
+            if v == None:
+                param.pop(k)
+    param_parser(p)
+    print p         
+    

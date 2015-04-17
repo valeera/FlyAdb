@@ -13,7 +13,7 @@ from common.browser import Browser
 from common.camera import Camera
 from common.telephony import Telephony
 from common.message import Message
-from common.configs import GetConfigs
+from common.configs import GetConfigs,Configs
 from common.settings import Settings
 
 class MultiTask(Common):
@@ -22,7 +22,12 @@ class MultiTask(Common):
         self.logger = createlogger(mod)
         self.log_path = create_folder()
         self.camera = Camera(self.device,"task_camera")
-        self.browser = Browser(self.device,"task_browser")
+        self.product = Configs("common").get("product","Info") 
+        if self.product == "Sprints":
+            from common.chrome import Chrome
+            self.browser = Chrome(self.device,"task_browser")
+        else:
+            self.browser = Browser(self.device,"task_browser")
         self.tel = Telephony(self.device,"task_tel")
         self.message = Message(self.device,"task_message")
         self.settings = Settings(self.device,"switch_nw")
@@ -46,20 +51,22 @@ class MultiTask(Common):
     def start(self):
         self.logger.debug("Start Some activities")
         self.logger.debug("Launch Contacts")
-        self.tel.start_app("Contacts")
+        #self.tel.start_app("Contacts")
+        self.tel.enter_contacts()
         self.device.delay(3)
         self.logger.debug("Launch Message")
         self.message.start_app("Messaging")
         self.device.delay(3)
         self.logger.debug("Launch Dialer")         
-        self.tel.start_app("Call")
+        #self.tel.start_app("Call")
+        self.tel.enter_dialer()
         self.device.delay(3)
         self.logger.debug("Launch Camera")           
         self.camera.start_app("Camera")
         self.device.delay(3)
         self.logger.debug("Launch Browser")        
-        self.browser.start_app("Browser")
-
+        #self.browser.start_app("Browser")
+        self.browser.enter()
     def make_call(self,number):
         if self.tel.enter_dialer():
             try:
@@ -106,8 +113,12 @@ class MultiTask(Common):
         for loop in range(times):
             try:
                 self.device.press.recent()
-                if self.device(resourceId='com.android.systemui:id/recents_view').wait.exists(timeout = 2000):
-                    self.device().fling.toBeginning(max_swipes=100)
+                if self.device(resourceId='com.android.systemui:id/recents_view').wait.exists(timeout = 2000):                 
+                    if self.product=="Sprints":
+                        for i in range(3):
+                            self.device.server.adb.shell("input swipe 350 400 350 1000")
+                    else:
+                        self.device().fling.toBeginning(max_swipes=100)
                     if self.device(resourceId='com.android.systemui:id/recents_view').child(index=0).child(index=3).exists:
                         self.device.click(540,450)
                         self.device.delay(2)
@@ -128,13 +139,13 @@ class MultiTask(Common):
 class TestMultiTask(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        #serino = "MDEVICE"
-        serino = "a7c0c6cf"
+        serino = "MDEVICE"
+        #serino = "a7c0c6cf"
         if len(sys.argv)>1:         
             serino = sys.argv[1] 
         cls.mod = MultiTask(serino, "Tasking")
         #cls.mod.remove()
-        cls.mod.settings.switch_network("ALL")
+        #cls.mod.settings.switch_network("ALL")
         cls.mod.start()
         
     @classmethod
@@ -154,7 +165,7 @@ class TestMultiTask(unittest.TestCase):
         self.mod.back_to_home()
         
     def testInteractionWithCall(self):
-        if(self.mod.make_call("10086")):
+        if(self.mod.make_call("10000")):
             self.mod.interaction(int(self.mod.dicttesttimes.get('ITERATIONS'.lower())))
             self.mod.end_call()
             
@@ -166,7 +177,7 @@ class TestMultiTask(unittest.TestCase):
         if self.mod.browser.exit():
             self.mod.suc_times+=1
             self.mod.logger.info("Trace Success exit Browser")
-            
+
 if __name__ == '__main__':
  
     suite1 = unittest.TestLoader().loadTestsFromTestCase(TestMultiTask)  

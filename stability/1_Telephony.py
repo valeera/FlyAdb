@@ -13,8 +13,8 @@ from common.settings import Settings
 class TestTelephony(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        #serino = "MDEVICE"
-        serino = "a7c0c6cf"
+        serino = "MDEVICE"
+        #serino = "a7c0c6cf"
         if len(sys.argv)>1:       
             serino = sys.argv[1] 
         cls.mod = Telephony(serino, "Telephony")
@@ -38,19 +38,22 @@ class TestTelephony(unittest.TestCase):
 
     def testCall2G(self):
         if int(self.mod.dicttesttimes.get("Contact2G".lower())) != 0:
-            self.set.switch_network("2G")
+            #self.set.switch_network("2G")
+            pass
         self.mod.call_contact(int(self.mod.dicttesttimes.get("Contact2G".lower())))
         self.mod.call_callLog(int(self.mod.dicttesttimes.get("CallLog2G".lower())))
             
     def testCall3G(self):
         if int(self.mod.dicttesttimes.get("Contact3G".lower())) != 0:
-            self.set.switch_network("3G")
+            #self.set.switch_network("3G")
+            pass
         self.mod.call_contact(int(self.mod.dicttesttimes.get("Contact3G".lower())))
         self.mod.call_callLog(int(self.mod.dicttesttimes.get("CallLog3G".lower()))) 
            
     def testCallLTE(self):
         if int(self.mod.dicttesttimes.get("ContactLTE".lower())) != 0:
-            self.set.switch_network("ALL")
+            #self.set.switch_network("ALL")
+            pass
         self.mod.call_contact(int(self.mod.dicttesttimes.get("ContactLTE".lower())))
         self.mod.call_callLog(int(self.mod.dicttesttimes.get("CallLogLTE".lower())))
  

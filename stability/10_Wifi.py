@@ -13,7 +13,7 @@ class TestWifi(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         serino = "MDEVICE"
-        #serino = "56c051e1"
+        #serino = "a7c0c64c"
         if len(sys.argv)>1:         
             serino = sys.argv[1] 
         cls.mod = Wifi(serino, "Wifi")
@@ -42,9 +42,9 @@ class TestWifi(unittest.TestCase):
         self.mod.switch(times)
  
     def testConnectWifi(self):
-        ssid = self.mod.config.getstr("Wifi","wifi_name","common")
-        pwd = self.mod.config.getstr("Wifi","wifi_password","common")
-        security = self.mod.config.getstr("Wifi","wifi_security","common")
+        ssid = self.mod.config.getstr("wifi_name","Wifi","common")
+        pwd = self.mod.config.getstr("wifi_password","Wifi","common")
+        security = self.mod.config.getstr("wifi_security","Wifi","common")
         self.mod.logger.debug("connect wifi %s/%s." %(ssid,pwd))
         times = int(self.mod.dicttesttimes.get("ConnectTimes".lower(),0))
         self.mod.connect(ssid,pwd,security,times)

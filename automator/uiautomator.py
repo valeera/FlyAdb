@@ -427,7 +427,7 @@ class AutomatorDevice():
 
     def long_click(self, x, y):
         '''long click at arbitrary coordinates.'''
-#         return self.swipe(x, y, x + 1, y + 1,1000)
+        #return self.swipe(x, y, x + 1, y + 1,1000)
         return self.server.adb.shell("input swipe %s %s %s %s 1000"%(x,y,x+1,y+1))
 
     def swipe(self, sx, sy, ex, ey, steps=100):

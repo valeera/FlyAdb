@@ -14,10 +14,10 @@ class Recorder(Common):
         """Launch Recorder by StartActivity.
         """       
         self.logger.debug('enter Soundrecorder')
-        if self.device(resourceId = self.appconfig.id("Recorder","id_record")).wait.exists(timeout = self.timeout):
+        if self.device(resourceId = self.appconfig.id("id_record","Recorder")).wait.exists(timeout = self.timeout):
             return True
         self.start_app("Sound Recorder")
-        if self.device(resourceId = self.appconfig.id("Recorder","id_record")).wait.exists(timeout = self.timeout):
+        if self.device(resourceId = self.appconfig.id("id_record","Recorder")).wait.exists(timeout = self.timeout):
             return True
         else:
             self.logger.warning('enter Soundrecorder fail!')
@@ -26,7 +26,7 @@ class Recorder(Common):
     def back_main_app(self):
         self.logger.debug("Back to main app")
         for i in range(5):
-            if self.device(resourceId = self.appconfig.id("Recorder","id_record")).exists:
+            if self.device(resourceId = self.appconfig.id("id_record","Recorder")).exists:
                 return True
             self.device.press.back()
             self.device.delay(1)
@@ -34,7 +34,7 @@ class Recorder(Common):
             self.logger.warning("Cannot back to main app")
             
     def get_storage_num(self):
-        return self.get_file_num(self.appconfig("Recorder","storage"),".amr")+self.get_file_num(self.appconfig("Recorder","storage"),".m4a")+self.get_file_num(self.appconfig("Recorder","storage"),".3gpp")
+        return self.get_file_num(self.appconfig("storage","Recorder"),".amr")+self.get_file_num(self.appconfig("Recorder","storage"),".m4a")+self.get_file_num(self.appconfig("Recorder","storage"),".3gpp")
 
     def record(self, duration=5): 
         """record audio several seconds.  
@@ -43,14 +43,14 @@ class Recorder(Common):
         self.logger.debug("Record audio %s seconds." % duration)
         file_num = self.get_storage_num()
         
-        if self.device(resourceId=self.appconfig.id("Recorder","id_start")).wait.exists(timeout = self.timeout):
-            self.device(resourceId=self.appconfig.id("Recorder","id_start")).click()
-        if not self.device(resourceId = self.appconfig.id("Recorder","id_timerView")).wait.exists(timeout = self.timeout):
+        if self.device(resourceId=self.appconfig.id("id_start","Recorder")).wait.exists(timeout = self.timeout):
+            self.device(resourceId=self.appconfig.id("id_start","Recorder")).click()
+        if not self.device(resourceId = self.appconfig.id("id_timerView","Recorder")).wait.exists(timeout = self.timeout):
             self.logger.warning("Fail to start recording!")
             return False
         self.device.delay(duration)
         self.logger.debug("Stop recording audio")
-        self.device(resourceId = self.appconfig.id("Recorder","id_stop")).click()
+        self.device(resourceId = self.appconfig.id("id_stop","Recorder")).click()
         self.device.delay(2)
         if self.device(text="Save").wait.exists(timeout = self.timeout):
             self.device(text="Save").click()
@@ -67,9 +67,9 @@ class Recorder(Common):
         author: li.huang
         """
         self.logger.debug("Enter Audio List")
-        if self.device(resourceId=self.appconfig.id("Recorder","id_filelist")).wait.exists(timeout = self.timeout):
-            self.device(resourceId=self.appconfig.id("Recorder","id_filelist")).click()
-        if not self.device(text=self.appconfig("Recorder","filelist_title")).wait.exists(timeout = self.timeout):
+        if self.device(resourceId=self.appconfig.id("id_filelist","Recorder")).wait.exists(timeout = self.timeout):
+            self.device(resourceId=self.appconfig.id("id_filelist","Recorder")).click()
+        if not self.device(text=self.appconfig("filelist_title","Recorder")).wait.exists(timeout = self.timeout):
             self.logger.warning("Cannot Enter file list")
             return False
         return True
@@ -79,9 +79,9 @@ class Recorder(Common):
         """touch audio according to index.  
         argv: (int)index -- file order in list
         """
-        if self.device(resourceId = self.appconfig.id("Recorder","id_item"),index=Index):
-            self.device(resourceId = self.appconfig.id("Recorder","id_item"),index=Index).child(resourceId="com.tct.soundrecorder:id/record_file_icon").click()
-            if self.device(resourceId=self.appconfig.id("Recorder","id_statebar")).wait.exists(timeout = self.timeout):
+        if self.device(resourceId = self.appconfig.id("id_item","Recorder"),index=Index):
+            self.device(resourceId = self.appconfig.id("id_item","Recorder"),index=Index).child(resourceId="com.tct.soundrecorder:id/record_file_icon").click()
+            if self.device(resourceId=self.appconfig.id("id_statebar","Recorder")).wait.exists(timeout = self.timeout):
                 self.logger.debug("Start Playing...")
                 self.device.delay(duration)
                 self.back_main_app()
@@ -96,12 +96,12 @@ class Recorder(Common):
         """
         self.logger.debug("Delete Audio.")
         audio_num = self.get_storage_num()
-        if self.device(resourceId = self.appconfig.id("Recorder","id_item"),index=Index):
-            self.device(resourceId = self.appconfig.id("Recorder","id_item"),index=Index).child(resourceId="com.tct.soundrecorder:id/record_file_more").click()
-        if self.device(text=self.appconfig("Recorder","delete")).wait.exists(timeout= 2000):
-            self.device(text=self.appconfig("Recorder","delete")).click()
-        if self.device(text=self.appconfig("Recorder","delete_confirm")).wait.exists(timeout= 2000):
-            self.device(text=self.appconfig("Recorder","delete_confirm")).click()
+        if self.device(resourceId = self.appconfig.id("id_item","Recorder"),index=Index):
+            self.device(resourceId = self.appconfig.id("id_item","Recorder"),index=Index).child(resourceId="com.tct.soundrecorder:id/record_file_more").click()
+        if self.device(text=self.appconfig("delete","Recorder")).wait.exists(timeout= 2000):
+            self.device(text=self.appconfig("delete","Recorder")).click()
+        if self.device(text=self.appconfig("delete_confirm","Recorder")).wait.exists(timeout= 2000):
+            self.device(text=self.appconfig("delete_confirm","Recorder")).click()
         self.device.delay(2)
         if audio_num <= self.get_storage_num():
             self.logger.warning("Delete audio failed.")

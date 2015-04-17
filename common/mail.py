@@ -1,7 +1,5 @@
-﻿# -*- coding: UTF-8 -*-
-"""Email library for scripts.
-
-"""
+# -*- coding: utf-8 -*-
+"""Email library """
 import re
 import sys
 from common import Common,UIParser
@@ -14,37 +12,45 @@ class Email(Common):
     def setup(self,accountName,password):
         self.enter()
         step1 = [
+                {"id":{"text":self.appconfig("mail_type","Email")}},
+                {"id":{"resourceId":self.appconfig.id("id_next","Email")}},
                 {"id":{"resourceId":"com.android.email:id/account_email"},"action":{"type":"set_text","param":[accountName]}},
                 {"id":{"resourceId":"com.android.email:id/next"}},
                 {"id":{"text":"POP3"}},
                 {"id":{"resourceId":"com.android.email:id/regular_password"},"action":{"type":"set_text","param":[password]}},
-                {"id":{"resourceId":"com.android.email:id/next"}},
-                {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"set_text","param":["mail2.t"]}},                     
+                {"id":{"resourceId":"com.android.email:id/next"},"delay":5000}, 
+                {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"clear_text"},"delay":5000},  
+                {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"set_text","param":[self.appconfig("mail_server")]}},                     
                 ]
         if UIParser.run(self,step1, self.back_to_mainapp)==False:
             return False
-        self.device(scrollable=True).scroll.vert.to(description="Next")  
+        self.device(scrollable=True).scroll.vert.to(description="Next")
         step2 = [
-                {"id":{"description":"Next"}}                   
+                {"id":{"description":"Next"},"delay":10000},     
+                {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"clear_text"},"delay":5000},             
+                {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"set_text","param":[self.appconfig("mail_server")]}},                          
                 ]
         if UIParser.run(self,step2, self.back_to_mainapp)==False:
             return False
-
+        self.device(scrollable=True).scroll.vert.to(description="Next")
         step3 = [
-                {"id":{"description":"Next"}}                   
+                {"id":"description","resourceId":["Next","Next"],"delay":10000},
+                {"id":{"resourceId":"com.android.email:id/account_name"},"action":{"type":"set_text","param":"CreatedByUIA"}},
+                {"id":"description","resourceId":["Next","Next"]}               
                 ]
-        if UIParser.run(self,step2, self.back_to_mainapp)==False:
+        if UIParser.run(self,step3, self.back_to_mainapp)==False:
             return False
+        
         return True
     
     def enter(self):
         """Launch email by StartActivity.
         """
         self.logger.debug("Launch email.")
-        if self.device(description=self.appconfig("Email","navigation")).wait.exists(timeout=self.timeout):
+        if self.device(description=self.appconfig("navigation")).wait.exists(timeout=self.timeout):
             return True
         self.start_app("Email")
-        if self.device(description=self.appconfig("Email","navigation")).wait.exists(timeout=self.timeout):
+        if self.device(description=self.appconfig("navigation")).wait.exists(timeout=self.timeout):
             return True
         else:
             self.logger.debug('Launch eamil fail')
@@ -74,7 +80,7 @@ class Email(Common):
     def back_to_mainapp(self):
         self.logger.debug("Back to main activity")
         for i in range(5):
-            if self.device(resourceId = "com.tct.email:id/search").exists:
+            if self.device(resourceId = self.appconfig.id("id_search")).exists:
                 return True
             self.device.press.back()
             self.device.delay(1)
@@ -84,7 +90,7 @@ class Email(Common):
 
     def loading(self):
         self.device.swipe(250,300,250,1200)
-        ui_loading = self.device(resourceId = self.appconfig.id("Email","id_loading"))
+        ui_loading = self.device(resourceId = self.appconfig.id("id_loading","Email"))
         if ui_loading.exists:
             self.logger.debug('loading mail')
             if not ui_loading.wait.gone(timeout = 30000):
@@ -108,8 +114,8 @@ class Email(Common):
             self.device(className='android.widget.ListView').child(className='android.widget.FrameLayout',index=0).click()
         else:
             self.device(className='android.widget.ListView').child(className='android.widget.FrameLayout',index=1).click()
-        if self.device(resourceId=self.appconfig.id("Email","id_overflow")).wait.exists(timeout = 5000):
-            self.device(resourceId=self.appconfig.id("Email","id_overflow")).click()
+        if self.device(resourceId=self.appconfig.id("id_overflow")).wait.exists(timeout = 5000):
+            self.device(resourceId=self.appconfig.id("id_overflow")).click()
         else:
             self.logger.warning('Cannot open an email')
             return False
@@ -127,7 +133,7 @@ class Email(Common):
         if self.loading() == False:
             self.logger.debug('loading mail Failed')
             return False 
-        if self.device(resourceId = self.appconfig.id("Email","id_empty")).wait.exists(timeout=300000):                        
+        if self.device(resourceId = self.appconfig.id("id_empty")).wait.exists(timeout=300000):                        
             return True
         else:
             self.logger.debug('email send fail in 5 min!!!')
@@ -159,13 +165,13 @@ class Email(Common):
         else:          
             maxtime=0
 #             while not self.device(textContains = self.appconfig("Email","empty_text")).exists:
-            while not self.device(resourceId = self.appconfig.id("Email","id_empty")).exists:
+            while not self.device(resourceId = self.appconfig.id("id_empty")).exists:
                 if self.device(className='android.widget.ListView').child(className='android.widget.FrameLayout',index=0).exists:
                     self.device(className='android.widget.ListView').child(className='android.widget.FrameLayout',index=0).long_click()
                 if self.device(description='Delete').wait.exists(timeout = self.timeout):
                     self.device(description='Delete').click()
                     self.device.delay(2)
-                if self.device(text= self.appconfig.id("Email","no_connection")).exists:
+                if self.device(text= self.appconfig.id("no_connection")).exists:
                     return False
                 if maxtime>100:
                     return False
@@ -231,8 +237,6 @@ class Email(Common):
 
 #test--------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    a = Email("a7c0c6cf","Email")
-    #a.setup("atttest05@tcl.com", "Password001")
-    a.open_email(2)
-   
-    
+    a = Email("a7ffc62c","Email")
+    a.setup("atttest05@tcl.com", "Password001")
+    #a.open_email(2)

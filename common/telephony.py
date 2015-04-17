@@ -14,11 +14,11 @@ class Telephony(Common):
         '''Launch calender by start activity.
         '''
         self.logger.debug("Enter Dialer")
-        if self.device(resourceId= self.appconfig.id("Dialer","id_enter")).exists:
+        if self.device(resourceId= self.appconfig.id("id_enter","Dialer")).exists:
             return True
         self.start_app("Phone")
         self.device.delay(2)
-        if self.device(resourceId= self.appconfig.id("Dialer","id_enter")).exists:
+        if self.device(resourceId= self.appconfig.id("id_enter","Dialer")).exists:
             return True
         else:
             return False
@@ -49,7 +49,7 @@ class Telephony(Common):
 
     def setup_contacts(self):
         self.logger.debug("setup Contacts")
-        self.adb.cmd("push",os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"File"), '/sdcard/')
+        self.adb.cmd("push",os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"File"), '/sdcard/Music')
         self.enter_contacts()
         contacts = [
                 {"id":{"description":"More options"}},
@@ -61,6 +61,7 @@ class Telephony(Common):
                 {"id":{"text":"PHONE"}}
                 ]
         UIParser.run(self, [contacts,store],self.back_to_contact)
+        self.back_to_contact()
         return False
 
     def get_contacts_num(self):
@@ -177,7 +178,8 @@ class Telephony(Common):
     def _call_contact(self,Index):
         '''select a contact for call
         '''
-        contact_name = "0Autotest%02d" % (Index+1)
+        print 111111111111111111111111111
+        contact_name = "Autotest%02d" % (Index+1)
         self.logger.debug('make call from contact %s' %contact_name)
         if self.device(text = "All contacts", selected = "false").exists:
             self.device(text = "All contacts").click()
@@ -189,7 +191,7 @@ class Telephony(Common):
         else:
             self.logger.warning("Cannot find the contact %s" %contact_name)
             return False
-        self.device.delay(2)  
+        self.device.delay(2)
         self.device(resourceId='com.android.contacts:id/communication_card').click()
         self.device(text = "00:05").wait.exists(timeout = 10000)
         if self.device(description='End').wait.exists(timeout=self.timeout):
@@ -242,7 +244,7 @@ class Telephony(Common):
                 step = [
                         {"id":{"description":"add new contact"}},
                         {"id":{"text":"Name","className":"android.widget.EditText"},"action":{"type":"set_text","param":[name]}},
-                        {"id":{"text":"Phone","className":"android.widget.EditText"},"action":{"type":"set_text","param":["10086"]}},               
+                        {"id":{"text":"Phone","className":"android.widget.EditText"},"action":{"type":"set_text","param":[Configs("common").get("sdevice_num","Telephony")]}},               
                         {"id":{"description":"Done"}}           
                         ]
                 if UIParser.run(self,step, self.back_to_contact)==True and self.device(text = name).wait.exists(timeout=self.timeout):
@@ -340,7 +342,7 @@ class Telephony(Common):
                       
          
 if __name__ == '__main__':
-    a = Telephony("a7c0c6cf","Telephony")
+    a = Telephony("a7c0c64c","Telephony")
     #a.delete_contact(2)
-    a.add_contact(2)                             
+    a.setup_contacts()                       
     

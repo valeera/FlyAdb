@@ -5,26 +5,31 @@ import os
 from ConfigParser import ConfigParser
 
 class Configs(object):
-    def __init__(self, module,subconfig = None):
+    def __init__(self, module,product = None):
         self.config = ConfigParser()
-        m =  os.path.join(os.path.join(subconfig), "%s.ini"%module) if subconfig else "%s.ini"%module
+        m =  os.path.join(os.path.join("product",product), "%s.ini"%module) if product else "%s.ini"%module
         self.config.read(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"configure",m))
-    def get(self,section,option):
+    def set_section(self,section):
+        self.section = section   
+    def get(self,option,section=None):
         """return an string value for the named option."""
+        if section == None and getattr(self ,"section"):
+            section = self.section
         try:
             try:
-                return self.config.getint(section, option)
+                return self.config.getint(section, option) or None
             except:
-                return self.config.get(section,option).strip('\'').strip('\"')
+                return self.config.get(section,option).strip('\'').strip('\"') or None
         except:
             return None
 
 class AppConfig(Configs):
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):       
         return self.get(*args)
-    def id(self,section,option):
+             
+    def id(self,option,section = None):
         try:
-            return "%s:%s"%(self.get(section,"package").strip('\'').strip('\"'),self.get(section,option).strip('\'').strip('\"'))
+            return "%s:%s"%(self.get("package",section).strip('\'').strip('\"'),self.get(option,section).strip('\'').strip('\"'))
         except:
             return None
 
@@ -37,6 +42,11 @@ class GetConfigs(object):
         self.testtype = self.commonconfig.get("Default","TEST_TYPE").upper()
         self.networktype = self.commonconfig.get("Default","NETWORK_TYPE")
         self.module = module.capitalize()
+    def get(self,section, option):
+        try:
+            return self.commonconfig.get(section, option) or None
+        except:
+            return None      
     @staticmethod
     def getstr(section, option, filename, exc=None):
         """return an string value for the named option."""
@@ -44,7 +54,7 @@ class GetConfigs(object):
         try:
 #             config.read(sys.path[-1] + "\\"+filename + ".ini")
             config.read(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"configure","%s.ini"%filename))
-            return config.get(section,option)
+            return config.get(option,section)
         except Exception,e:
             print e
             return exc
@@ -77,5 +87,6 @@ class GetConfigs(object):
 
 
 if __name__ == '__main__':
-    config = Configs("configure","appinfo")
-    print config
+    config = AppConfig("appinfo","Sprints")
+    print config.id("id_search","Email")
+    

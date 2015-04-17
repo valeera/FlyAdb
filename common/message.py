@@ -1,4 +1,4 @@
-﻿# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 """Message library for scripts.
 """
 
@@ -13,16 +13,17 @@ class Message(Common):
     """Provide common functions for scripts, such as launching activity."""
     def __init__(self, device, log_name):
         Common.__init__(self, device,log_name)
+        self.appconfig.set_section("Message")
         self.msgs = {'Audio':"4",'Video':"3",'Photo':"2",'Text':"1"} 
            
     def enter(self):
         """Launch browser.
         """
         self.logger.debug('enter Message')
-        if self.device(resourceId= self.appconfig.id("Message","id_enter")).wait.exists(timeout=2000):
+        if self.device(resourceId= self.appconfig.id("id_enter")).wait.exists(timeout=2000):
             return True
         self.start_app("Messaging")
-        if self.device(resourceId = self.appconfig.id("Message","id_enter")).wait.exists(timeout=2000):
+        if self.device(resourceId = self.appconfig.id("id_enter")).wait.exists(timeout=2000):
             return True
         else:
             self.logger.warning('Launch Message fail')
@@ -33,26 +34,27 @@ class Message(Common):
         if not self.enter():
             return False
         text = [
-                {"id":{"resourceId":"com.android.mms:id/action_compose_new"}},
+                {"id":{"resourceId":self.appconfig.id("id_new")}},
                 {"id":{"className":"android.widget.MultiAutoCompleteTextView"},"action":{"type":"set_text","param":[self.msgs["Text"]]}}, 
-                {"id":{"text":"Type text message"},"action":{"type":"set_text","param":["10010"]}}, 
-                {"id":{"resourceId":"com.android.mms:id/send_button_sms"}},
+                #{"id":{"text":"Type text message"},"action":{"type":"set_text","param":["10010"]}}, #sprints
+                {"id":{"resourceId":"com.android.mms:id/embedded_text_editor"},"action":{"type":"set_text","param":["10010"]}}, #alto5gl                          
+                {"id":{"resourceId":self.appconfig.id("id_sms_send")}},
                 {"id":{"meta":"back_to_message"}},
                 ]
-    
         picture = [
-                {"id":"resourceId","content":"com.android.mms:id/action_compose_new"},
+                {"id":"resourceId","content":self.appconfig.id("id_new")},
                 {"id":"className","content":"android.widget.MultiAutoCompleteTextView","action":{"type":"set_text","param":[self.msgs["Photo"]]}}, 
-                {"id":"resourceId","content":"com.android.mms:id/share_button"},
-                {"id":"text","content":["Pictures","Capture picture"]},                     
+                {"id":"resourceId","content":self.appconfig.id("id_share")},
+                {"id":"text","content":[self.appconfig("picture"),self.appconfig("capture_picture")]},
+                {"id":"text","content":"No thanks","assert":False},                 
                 {"id":"resourceId","content":"org.codeaurora.snapcam:id/shutter_button","action":{"type":"click"}},
                 {"id":"resourceId","content":"org.codeaurora.snapcam:id/btn_done"},
-                {"id":"resourceId","content":"com.android.mms:id/send_button_mms"},
+                {"id":{"resourceId":self.appconfig.id("id_mms_send")}},
                 {"id":"meta","content":"back_to_message"},
                 ]   
     
         video = [
-                {"id":"resourceId","content":"com.android.mms:id/action_compose_new"},
+                {"id":"resourceId","content":self.appconfig.id("id_new")},
                 {"id":"className","content":"android.widget.MultiAutoCompleteTextView","action":{"type":"set_text","param":[self.msgs["Video"]]}}, 
                 {"id":"resourceId","content":"com.android.mms:id/share_button"},
                 {"id":"text","content":["Videos","Capture video"]},                     
@@ -64,25 +66,26 @@ class Message(Common):
                 ]
      
         audio = [
-                {"id":"resourceId","content":"com.android.mms:id/action_compose_new"},
+                {"id":"resourceId","content":self.appconfig.id("id_new")},
                 {"id":"className","content":"android.widget.MultiAutoCompleteTextView","action":{"type":"set_text","param":self.msgs["Audio"]}}, 
                 {"id":"resourceId","content":"com.android.mms:id/share_button"},
                 {"id":"text","content":["Audio","Record audio"]},                     
                 {"id":"resourceId","content":"com.tct.soundrecorder:id/recordButton","action":{"type":"click","delay":1000}},
-                {"id":"text","content":"Save"},
+                {"id":"text","content":"Save","wait":20000},
                 {"id":"resourceId","content":"org.codeaurora.snapcam:id/btn_done"},
                 {"id":"resourceId","content":"com.android.mms:id/send_button_mms"},
                 {"id":"meta","content":"back_to_message"},
                 ]
             
+        #return UIParser.run(self,[text,picture,video,audio],self.back_to_message)
         return UIParser.run(self,[text,picture,video,audio],self.back_to_message)
-       
+    
     def back_to_message(self):
         """back to message list .
         """  
         self.logger.debug('Back to message list')
         for i in range(5):
-            if self.device(resourceId=self.appconfig.id("Message","id_enter")).exists:
+            if self.device(resourceId=self.appconfig.id("id_enter")).exists:
                 break
             self.device.press.back()
             self.device.delay(1)
@@ -139,13 +142,13 @@ class Message(Common):
         self.logger.debug("Select message option %s." %(type))
         
         self.select_msg(type)
-        
+        send = "Send" if type=="Text" else "Send MMS"
         fwd = [
-               {"id":{"resourceId":'com.android.mms:id/message_block'},"action":{"type":"long_click"}},         
+               {"id":{"resourceId":'com.android.mms:id/text_view'},"action":{"type":"long_click"}},         
                {"id":{"text":'Forward'}},
                {"id":{"className":"android.widget.MultiAutoCompleteTextView"},"action":{"type":"set_text","param":[number]}}, 
-               {"id":{"description":"Send"}}, 
-               {"id":"meta","content":"_verify_msg_sending"},
+               {"id":{"description":send}}, 
+               {"id":"meta","content":"_verify_msg_sending","assert":False},
                {"id":"meta","content":"back_to_message"}  
                ]      
         return UIParser.run(self,fwd,self.back_to_message)
@@ -161,11 +164,11 @@ class Message(Common):
                 self.device.delay(1)
                 self.logger.debug('send')
                 if type == "Text":
-                    if self.device(resourceId=self.appconfig.id("Message","id_sms_send")).wait.exists(timeout = 3000):
-                        self.device(resourceId=self.appconfig.id("Message","id_sms_send")).click()
+                    if self.device(resourceId=self.appconfig.id("id_sms_send")).wait.exists(timeout = 3000):
+                        self.device(resourceId=self.appconfig.id("id_sms_send")).click()
                 else:
-                    if self.device(resourceId=self.appconfig.id("Message","id_mms_send")).wait.exists(timeout = 3000):
-                        self.device(resourceId=self.appconfig.id("Message","id_mms_send")).click()
+                    if self.device(resourceId=self.appconfig.id("id_mms_send")).wait.exists(timeout = 3000):
+                        self.device(resourceId=self.appconfig.id("id_mms_send")).click()
                 self.device.delay(1)
                 self.back_to_message()
                 self.device.delay(2)
@@ -174,7 +177,7 @@ class Message(Common):
                 return self._verify_msg_sending()
 
     def get_sms_num(self):
-        return self.device(resourceId=self.appconfig.id("Message","id_listitem")).count
+        return self.device(resourceId=self.appconfig.id("id_listitem")).count
             
     def delete_extra_msg(self):
         ''' Long press to delete message in the message list
@@ -185,25 +188,29 @@ class Message(Common):
         childNodeNum=self.get_sms_num()
         if childNodeNum == 4:
             return True
-        for i in range(childNodeNum):
-            from_num = self.device(resourceId="android:id/list").child(index = i).child(resourceId="com.android.mms:id/from").get_text()
-            if from_num not in self.msgs.values():
-                self.device(resourceId="android:id/list").child(index = i).click()
-                self.logger.debug("Delete the message from: %s" %from_num)              
-                if self.device(description = "More options").wait.exists(timeout = self.timeout):# and self.device(text=from_num).exists:
-                    self.device(description = "More options").click()
-                elif (self.device(resourceId="com.android.mms:id/embedded_text_editor").wait.exists(timeout = 5000) and
-                    (self.device(text=from_num).exists)): 
-                    self.device(description="accessibility overflow label").click()
-                else:
-                    self.logger.warning("Enter the wrong msg!")
-                    break
-                if self.device(text="Delete thread").wait.exists(timeout = self.timeout):
-                    self.device(text="Delete thread").click()
-                if self.device(text=self.appconfig("Message",'delete_confirm')).wait.exists(timeout = self.timeout):
-                    self.device(text=self.appconfig("Message",'delete_confirm')).click()
-                    break
-                self.back_to_message()
+        elif childNodeNum>4:
+            for i in range(childNodeNum):
+                from_num = self.device(resourceId="android:id/list").child(index = i).child(resourceId="com.android.mms:id/from").get_text()
+                if from_num not in self.msgs.values():
+                    self.device(resourceId="android:id/list").child(index = i).child(resourceId="com.android.mms:id/from").click()
+                    self.logger.debug("Delete the message from: %s" %from_num)              
+                    if self.device(description = "More options").wait.exists(timeout = self.timeout):# and self.device(text=from_num).exists:
+                        self.device(description = "More options").click()
+                    elif (self.device(resourceId="com.android.mms:id/embedded_text_editor").wait.exists(timeout = 5000) and
+                        (self.device(text=from_num).exists)): 
+                        self.device(description="accessibility overflow label").click()
+                    else:
+                        self.logger.warning("Enter the wrong msg!")
+                        break
+                    if self.device(text="Delete thread").wait.exists(timeout = self.timeout):
+                        self.device(text="Delete thread").click()
+                        if self.device(text=self.appconfig('delete_confirm')).wait.exists(timeout = self.timeout):
+                            self.device(text=self.appconfig('delete_confirm')).click()
+                            return self.delete_extra_msg()
+                    elif self.device(text="Discard").wait.exists():
+                        self.device(text="Discard").click()
+                        return self.delete_extra_msg()
+                    self.back_to_message()
         else:
             self.logger.warning("Too many extra messages")
             return False
@@ -215,7 +222,7 @@ class Message(Common):
         for loop in range(times):
             try:
                 self.logger.debug("Select the message with %s." % (msg_type))
-                if self.fwd_msg(msg_type,"10086"):
+                if self.fwd_msg(msg_type,"10000"):
                     self.suc_times += 1
                     self.logger.info("Trace Success Loop %s." % (loop+1))
                 else:
@@ -274,7 +281,7 @@ class Message(Common):
               (str)content -- SMS content
         """
         if self.enter():
-            self.device(resourceId=self.appconfig.id("Message","id_new")).click()
+            self.device(resourceId=self.appconfig.id("id_new")).click()
             input_text = self.device(className='android.widget.MultiAutoCompleteTextView')
             if input_text.wait.exists(timeout = self.timeout):
                 self.logger.debug('input phone number:'+str(number))
@@ -288,7 +295,7 @@ class Message(Common):
                     self.device.delay(2)
                 self.logger.debug('send')
                 #self.device(resourceId=self.appconfig.id("Message","id_send_sms")).click()
-                self.device(description=self.appconfig("Message","send")).click()
+                self.device(description=self.appconfig("send")).click()
                 self.device.delay(1)
             if self.device(text='SENDING?').wait.gone(timeout = 10000):
 #                 and (not self.device(resourceId ='com.android.mms:id/delivered_indicator').wait.exists(timeout=10000)) 
@@ -386,15 +393,15 @@ class Message(Common):
         self.logger.debug('clean message')
         sms_bum = self.get_sms_num()
         if sms_bum > 4:
-            self.device(description=self.appconfig("Message","options")).click()
-            if self.device(text=self.appconfig("Message","delete_all_action")).wait.exists(timeout = 2000):
-                self.device(text=self.appconfig("Message","delete_all_action")).click()
-                if self.device(resourceId=self.appconfig.id("Message","id_select_all")).wait.exists(timeout = 2000):          
-                    self.device(resourceId=self.appconfig.id("Message","id_select_all")).click()
+            self.device(description=self.appconfig("options")).click()
+            if self.device(text=self.appconfig("delete_all_action")).wait.exists(timeout = 2000):
+                self.device(text=self.appconfig("delete_all_action")).click()
+                if self.device(resourceId=self.appconfig.id("id_select_all")).wait.exists(timeout = 2000):          
+                    self.device(resourceId=self.appconfig.id("id_select_all")).click()
                     self.device.delay(2)   
             for index in range(sms_bum):
                 if index!=0:
-                    self.device(resourceId=self.appconfig.id("Message","id_listitem"),index = index).click()
+                    self.device(resourceId=self.appconfig.id("id_listitem"),index = index).click()
 
     def lp_delete_msg(self,index = 0):
         ''' Long press to delete message in the message list
@@ -405,11 +412,11 @@ class Message(Common):
         childNodeNum=self.get_sms_num()
         
         if childNodeNum > 4:
-            print self.device(resourceId=self.appconfig.id("Message","id_listitem"),index = index).long_click()
-            if self.device(text=self.appconfig("Message",'delete_action')).wait.exists(timeout = 2000):
-                self.device(text=self.appconfig("Message",'delete_action')).click()
-            if self.device(text=self.appconfig("Message",'delete_confirm')).wait.exists(timeout = 2000):
-                self.device(text=self.appconfig("Message",'delete_confirm')).click()
+            print self.device(resourceId=self.appconfig.id("id_listitem"),index = index).long_click()
+            if self.device(text=self.appconfig('delete_action')).wait.exists(timeout = 2000):
+                self.device(text=self.appconfig('delete_action')).click()
+            if self.device(text=self.appconfig('delete_confirm')).wait.exists(timeout = 2000):
+                self.device(text=self.appconfig('delete_confirm')).click()
             if self.get_sms_num()<childNodeNum:    
                 return True
             else:
@@ -418,10 +425,8 @@ class Message(Common):
 
 if __name__ == '__main__':
     
-    a = Message("a7c0c6cf","Message")
+    a = Message("a7ffc62c","Message")
     print a.setup()
 
     #a.device.watcher("messaging").when(text = "This can cause charges to your mobile account.").click(text = "Send")
     #a.device.watcher("messaging").triggered
-
-

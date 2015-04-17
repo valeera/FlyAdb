@@ -6,14 +6,15 @@ import sys
 from common import Common,connect_device,createlogger
 #from browser import Browser
 from chrome import Chrome
-from music import Music
-from configs import GetConfigs,AppConfig
+from music import Music,PlayMusic
+from configs import GetConfigs,AppConfig,Configs
 from recorder import Recorder
 from camera import Camera
 
 class Media():
 
     def __init__(self, device, mod):
+        self.product = Configs("common").get("product","Info")
         self.device = connect_device(device)
         self.appconfig = AppConfig("appinfo")
         self.logger = createlogger(mod)
@@ -21,7 +22,10 @@ class Media():
         self.record = Recorder(self.device,"media_recorder")
         #self.browser = Browser(self.device,"media_browser")
         self.chrome = Chrome(self.device,"media_chrome")
-        self.music = Music(self.device,"media_music")
+        if self.product == "Sprints":
+            self.music = PlayMusic(self.device,"media_music")
+        else:
+            self.music = Music(self.device,"media_music")
         self.suc_times = 0
         self.mod_cfg = GetConfigs(mod)
         self.test_times = 0
@@ -210,9 +214,12 @@ class Media():
         for loop in range(times):
             if self.chrome.enter():
                 try:
-                    self.chrome.chrome_webpage(self.appconfig("Media","steamaddress"))
+                    self.chrome.chrome_webpage(self.appconfig("steamaddress","Media"))
                     self.device.delay(5)
-                    self.device.click(540,890)
+                    if self.product == "Sprints":
+                        self.device.click(350,530)
+                    else:
+                        self.device.click(540,890)
                     self.device.delay(5)
                     if self.chrome.is_playing_video():
                         self.logger.debug("Streaming playing...")

@@ -13,9 +13,9 @@ from common.configs import GetConfigs
 class TestPim(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        #serino = "MDEVICE"
-        serino = "a7c0c6cf"
-        if len(sys.argv)>1:         
+        serino = "MDEVICE"
+        #serino = "a7ffc62c"
+        if len(sys.argv)>1:
             serino = sys.argv[1] 
         cls.mod = Schedule(serino, "Pim")
 
@@ -34,23 +34,23 @@ class TestPim(unittest.TestCase):
 
     def tearDown(self):
         self.mod.back_to_home()
-     
+ 
+    @unittest.skip("demonstrating skipping")      
     def testAddCalendar(self):
         times = int(self.mod.dicttesttimes.get("add_calendar",0))
 #         self.assertTrue(times>0)
         self.mod.add_calendars(times)
-    
+    @unittest.skip("demonstrating skipping")      
     def testDelCalendar(self):
         times = int(self.mod.dicttesttimes.get("add_calendar",0))
 #         self.assertTrue(times>0)
         self.mod.delete_calendars(times)
-
-    @unittest.skip("demonstrating skipping")      
+    
     def testAddAlarm(self):
         times = int(self.mod.dicttesttimes.get("add_alarm",0))
 #         self.assertTrue(times>0)
         self.mod.add_alarms(times)
-    @unittest.skip("demonstrating skipping")        
+     
     def testDelAlarm(self):
         times = int(self.mod.dicttesttimes.get("del_alarm",0))
 #         self.assertTrue(times>0)
