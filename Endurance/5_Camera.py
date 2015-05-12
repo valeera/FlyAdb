@@ -43,16 +43,24 @@ class CameraEndurance(unittest.TestCase):
         self.mod.enter()
         for i in range(test_times):
             self.mod.logger.debug("Take pic with back camera.")
-            if self.mod.switch_picker("back") and self.mod.take_photo():
-                self.mod.del_picture()
-                self.mod.back_to_camera()
+            self.mod.logger.debug(self.mod.product)
+            if self.mod.product == "Sprints":
+                if self.mod.take_photo():
+                    self.mod.del_picture()
+                    self.mod.back_to_camera()
+                else:
+                    continue               
             else:
-                continue
-            if self.mod.switch_picker("front") and self.mod.take_photo():
-                self.mod.del_picture()
-                self.mod.back_to_camera()
-            else:
-                continue
+                if self.mod.switch_picker("back") and self.mod.take_photo():
+                    self.mod.del_picture()
+                    self.mod.back_to_camera()
+                else:
+                    continue
+                if self.mod.switch_picker("front") and self.mod.take_photo():
+                    self.mod.del_picture()
+                    self.mod.back_to_camera()
+                else:
+                    continue
             self.mod.logger.info("Trace Success Loop %s." % (i+1))
             self.mod.suc_times = self.mod.suc_times + 1
 

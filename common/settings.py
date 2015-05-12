@@ -11,11 +11,12 @@ class Settings(Common):
         '''enter the option of settings screen
          argv: the text of the settings option
         '''
+        self.logger.debug(option)  
         self.start_app("Settings")
         if self.device(text=self.appconfig("settings","Settings")).wait.exists(timeout = 2000):
-            self.logger.debug("enter Settings")  
-            if self.device(text=option).exists:
-                self.device(text=option).click()
+            self.logger.debug("enter Settings") 
+            if self.device(textStartsWith=option).exists:
+                self.device(textStartsWith=option).click()
             else:
                 self.device(scrollable=True).scroll.vert.forward(steps=100)
                 if self.device(text=option).wait.exists(timeout = 10000):
@@ -40,7 +41,7 @@ class Settings(Common):
                 self.device(text="Preferred network mode").click()
             if self.device(resourceId="android:id/buttonPanel").wait.exists(timeout=self.timeout):
                 self.device(text=network_type).click()
-        self._is_connected(type)
+        print self._is_connected(type)
         self.back_to_home()
 
 class Wifi(Settings): 
@@ -98,7 +99,8 @@ class Wifi(Settings):
                 self.device.delay(1)
                 self.device(resourceId="com.android.settings:id/password").set_text(password)
                 self.device.delay(2)
-        self.device(text="Connect").click()
+        print self.appconfig("wifi_connect","Settings")
+        self.device(text=self.appconfig("wifi_connect","Settings")).click()
         self.device.delay(2)
         self.device(scrollable=True).scroll.vert.toBeginning(steps=10)
         if self.device(text="Connected").wait.exists(timeout=10000):
@@ -192,7 +194,8 @@ class Wifi(Settings):
 
 class Airplane(Settings): 
     def enter(self):
-        if self.enter_settings(u"More…"):
+        print self.appconfig("More","Settings")
+        if self.enter_settings(self.appconfig("More","Settings")):
             if self.device(text='Airplane mode').wait.exists(timeout=2000):
                 return True
     def switch(self):
@@ -238,5 +241,5 @@ class Bt(Settings):
         return False
 
 if __name__ == '__main__':
-    a = Settings("56c05003","Settings")
-    a.switch_network("ALL")
+    a = Airplane("e8d3e0c2","Settings")
+    a.enter()

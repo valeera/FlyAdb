@@ -14,7 +14,7 @@ class TestMessage(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         serino = "MDEVICE"
-        #serino = "a7ffc62c"
+        serino = "a541c694"
         if len(sys.argv)>1:         
             serino = sys.argv[1] 
         cls.mod = Message(serino, "Message")

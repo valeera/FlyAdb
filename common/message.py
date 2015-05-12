@@ -72,27 +72,27 @@ class Message(Common):
                 {"id":"text","content":["Audio","Record audio"]},                     
                 {"id":"resourceId","content":"com.tct.soundrecorder:id/recordButton","action":{"type":"click","delay":1000}},
                 {"id":"text","content":"Save","wait":20000},
-                {"id":"resourceId","content":"org.codeaurora.snapcam:id/btn_done"},
+                {"id":"resourceId","content":"org.codeaurora.snapcam:id/btn_done","assert":False},
                 {"id":"resourceId","content":"com.android.mms:id/send_button_mms"},
                 {"id":"meta","content":"back_to_message"},
                 ]
             
-        #return UIParser.run(self,[text,picture,video,audio],self.back_to_message)
         return UIParser.run(self,[text,picture,video,audio],self.back_to_message)
-    
+
     def back_to_message(self):
         """back to message list .
         """  
         self.logger.debug('Back to message list')
         for i in range(5):
             if self.device(resourceId=self.appconfig.id("id_enter")).exists:
-                break
+                return True
             self.device.press.back()
             self.device.delay(1)
             if self.device(text="OK").exists:
                 self.device(text="OK").click()
         else:
             self.logger.warning('Back to message list fail')
+        return False
 
     def _verify_msg_sending(self):
         """verify whether the message has received
@@ -110,6 +110,10 @@ class Message(Common):
             self.logger.debug('message send success!')
             return True
         else:
+            self.device.press.back()
+            if  self.device(resourceId='com.android.mms:id/date_view').exists:
+                self.logger.debug('message send success!')
+                return True
             self.logger.debug('message send fail!!!')
             return False
     
@@ -142,9 +146,10 @@ class Message(Common):
         self.logger.debug("Select message option %s." %(type))
         
         self.select_msg(type)
+        self.device.press.back()
         send = "Send" if type=="Text" else "Send MMS"
         fwd = [
-               {"id":{"resourceId":'com.android.mms:id/text_view'},"action":{"type":"long_click"}},         
+               {"id":{"resourceId":self.appconfig.id("id_text_view")},"action":{"type":"long_click"}},         
                {"id":{"text":'Forward'}},
                {"id":{"className":"android.widget.MultiAutoCompleteTextView"},"action":{"type":"set_text","param":[number]}}, 
                {"id":{"description":send}}, 
@@ -186,9 +191,10 @@ class Message(Common):
         '''
         self.logger.debug("Delete the extra message.")
         childNodeNum=self.get_sms_num()
+        print childNodeNum
         if childNodeNum == 4:
             return True
-        elif childNodeNum>4:
+        elif childNodeNum>4 and self.product == "Sprints":
             for i in range(childNodeNum):
                 from_num = self.device(resourceId="android:id/list").child(index = i).child(resourceId="com.android.mms:id/from").get_text()
                 if from_num not in self.msgs.values():
@@ -211,6 +217,24 @@ class Message(Common):
                         self.device(text="Discard").click()
                         return self.delete_extra_msg()
                     self.back_to_message()
+        elif childNodeNum>4 and self.product == "Alto5GL":
+            self.device(description=self.appconfig("options")).click()
+            if self.device(text=self.appconfig("delete_all_action")).wait.exists(timeout = self.timeout):
+                self.device(text=self.appconfig("delete_all_action")).click()            
+            for i in range(childNodeNum):
+                if self.device(resourceId=self.appconfig.id("id_listitem"),index = i).child(resourceId = "com.android.mms:id/from").get_text() in self.msgs.values():
+                    continue
+                self.device(resourceId=self.appconfig.id("id_listitem"),index = i).click()
+#                 self.device.delay(2)
+            if self.device(description=self.appconfig('delete_action')).wait.exists(timeout = self.timeout):
+                self.device(description=self.appconfig('delete_action')).click()
+            if self.device(text=self.appconfig('delete_confirm')).wait.exists(timeout = self.timeout):
+                self.device(text=self.appconfig('delete_confirm')).click()
+            self.device.press.back()
+            if self.get_sms_num()<childNodeNum:    
+                return True
+            else:
+                return False
         else:
             self.logger.warning("Too many extra messages")
             return False
@@ -222,7 +246,7 @@ class Message(Common):
         for loop in range(times):
             try:
                 self.logger.debug("Select the message with %s." % (msg_type))
-                if self.fwd_msg(msg_type,"10000"):
+                if self.fwd_msg(msg_type,self.config.get("Message","MSG_RECEIVER")):
                     self.suc_times += 1
                     self.logger.info("Trace Success Loop %s." % (loop+1))
                 else:
@@ -356,7 +380,7 @@ class Message(Common):
                 {"id":"text","content":["Audio","Record audio"]},                     
                 {"id":"resourceId","content":"com.tct.soundrecorder:id/recordButton","action":{"type":"click","delay":1000}},
                 {"id":"text","content":"Save"},
-                {"id":"resourceId","content":"org.codeaurora.snapcam:id/btn_done"},
+                {"id":"resourceId","content":"org.codeaurora.snapcam:id/btn_done","assert":False},
                 {"id":"resourceId","content":"com.android.mms:id/send_button_mms"},
                 {"id":"meta","content":"back_to_message"},
                 ]
@@ -425,8 +449,8 @@ class Message(Common):
 
 if __name__ == '__main__':
     
-    a = Message("a7ffc62c","Message")
-    print a.setup()
+    a = Message("adede7a6","Message")
+    print a.delete_extra_msg()
 
     #a.device.watcher("messaging").when(text = "This can cause charges to your mobile account.").click(text = "Send")
     #a.device.watcher("messaging").triggered

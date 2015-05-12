@@ -14,12 +14,12 @@ class TestMedia(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         serino = "MDEVICE"
-        #serino = "a7c0c6cf"
+#         serino = "adede7a6"
         if len(sys.argv)>1:         
             serino = sys.argv[1] 
         cls.mod = Media(serino, "Media")
         cls.set = Settings(cls.mod.device, "Settings")
-        #cls.set.switch_network("ALL")
+#         cls.set.switch_network("ALL")
 
     @classmethod
     def tearDownClass(cls):
@@ -49,9 +49,9 @@ class TestMedia(unittest.TestCase):
         if aud_num:
             self.mod.play_audio(aud_num)
             self.mod.del_audio(aud_num)
- 
+  
         self.mod.streaming(int(self.mod.dicttesttimes.get('STREAMTIMES'.lower())))
-        self.mod.oc_player(int(self.mod.dicttesttimes.get('OPENCLOSETIMES'.lower())))          
+        self.mod.oc_player(int(self.mod.dicttesttimes.get('OPENCLOSETIMES'.lower())))        
         self.mod.play_music(int(self.mod.dicttesttimes.get('MUSICPLAYTIMES'.lower())))
         self.mod.close_music()
 

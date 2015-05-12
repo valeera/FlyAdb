@@ -11,10 +11,10 @@ class Browser(Common):
         """Launch browser.
         """
         self.logger.debug('enter browser')
-        if self.device(resourceId= self.appconfig.id("Browser","id_url")).wait.exists(timeout=self.timeout):
+        if self.device(resourceId= self.appconfig.id("id_url")).wait.exists(timeout=self.timeout):
             return True
         self.start_app("Browser")
-        if self.device(resourceId= self.appconfig.id("Browser","id_url")).wait.exists(timeout=self.timeout):
+        if self.device(resourceId= self.appconfig.id("id_url")).wait.exists(timeout=self.timeout):
             return True
         else:
             return False 
@@ -23,21 +23,22 @@ class Browser(Common):
         """exit browser.
         """
         self.logger.debug('exit browser')
-        if not self.device(packageName = self.appconfig("Browser","package")):
+        if not self.device(packageName = self.appconfig("package")):
             return True
-        self.device(description=self.appconfig("Browser","options")).click()
+        self.device(description=self.appconfig("options")).click()
         self.device.delay(3)
-        self.device(scrollable=True).scroll.vert.to(text=self.appconfig("Browser","exit"))
-        self.device(text=self.appconfig("Browser","exit")).click()
-        if self.device(text = self.appconfig("Browser","exit_confirm")).wait.exists(timeout=self.timeout):
-            self.device(text = self.appconfig("Browser","exit_confirm")).click()
-        if not self.device(packageName = self.appconfig("Browser","package")):
+        self.device(scrollable=True).scroll.vert.to(text=self.appconfig("exit"))
+        self.device(text=self.appconfig("exit")).click()
+        print self.appconfig("exit_confirm")
+        if self.device(text = self.appconfig("exit_confirm")).wait.exists(timeout=self.timeout):
+            self.device(text = self.appconfig("exit_confirm")).click()
+        if not self.device(packageName = self.appconfig("package")):
             return True
         return False
 
     def home(self):
         for loop in range(3):
-            if self.device(resourceId= self.appconfig.id("Browser","id_url")).wait.exists(timeout=2000):
+            if self.device(resourceId= self.appconfig.id("id_url")).wait.exists(timeout=2000):
                 return
             else:
                 self.device.press.back()
@@ -46,15 +47,15 @@ class Browser(Common):
         """enter home page
         """
         self.logger.debug('enter the home page')
-        self.device(description=self.appconfig("Browser","options")).click()
-        homepage = self.device(text=self.appconfig("Browser","action_home"))
+        self.device(description=self.appconfig("options")).click()
+        homepage = self.device(text=self.appconfig("action_home"))
         if homepage.wait.exists(timeout=self.timeout):  
             homepage.click()
         else:
             self.logger.debug("home page load fail!")
             return False      
         self.logger.debug('loading...')  
-        progress = self.device(resourceId=self.appconfig.id("Browser","id_progress"))     
+        progress = self.device(resourceId=self.appconfig.id("id_progress"))     
         if progress.wait.exists(timeout=self.timeout):
             if not progress.wait.gone(timeout=30000):
                 self.logger.debug("home page load fail!")
@@ -66,14 +67,14 @@ class Browser(Common):
         """browser webpage
         """ 
         #widget position:the edit area of website 
-        url_text = self.device(className='android.widget.EditText',resourceId=self.appconfig.id("Browser","id_url")) 
+        url_text = self.device(className='android.widget.EditText',resourceId=self.appconfig.id("id_url")) 
         if url_text.wait.exists(timeout=self.timeout):    
             url_text.set_text(website)
             self.device.delay(3)
             self.device.press.enter()
             self.device.delay(1)
             self.logger.debug('loading...')
-            progress = self.device(resourceId=self.appconfig.id("Browser","id_progress"))     
+            progress = self.device(resourceId=self.appconfig.id("id_progress"))     
             if progress.wait.exists(timeout=self.timeout):
                 if not progress.wait.gone(timeout=30000):
                     self.logger.debug(website+" open fail!")
@@ -87,19 +88,19 @@ class Browser(Common):
         """clear data of browser
         """         
         self.logger.debug('Clear browser data')
-        self.device(description=self.appconfig("Browser","options")).click()
+        self.device(description=self.appconfig("options")).click()
         self.device.delay(2)
         self.device(scrollable=True).scroll.vert.forward(steps=10)
-        setting = self.device(text= self.appconfig("Browser","settings"))
+        setting = self.device(text= self.appconfig("settings"))
         if setting.wait.exists(timeout=self.timeout):
             setting.click()
-        ps = self.device(text=self.appconfig("Browser","security"))
+        ps = self.device(text=self.appconfig("security"))
         if ps.wait.exists(timeout=self.timeout):
             ps.click()
-        clear = self.device(text=self.appconfig("Browser","clear_cache"))
+        clear = self.device(text=self.appconfig("clear_cache"))
         if clear.wait.exists(timeout=self.timeout):
             clear.click()           
-        ok = self.device(text=self.appconfig("Browser","clear_confirm"))
+        ok = self.device(text=self.appconfig("clear_confirm"))
         if ok.wait.exists(timeout=self.timeout):
             ok.click()             
         self.home()
@@ -108,7 +109,7 @@ class Browser(Common):
     def browser_playvideo(self,website):
         """play video by browser
         """         
-        url_text = self.device(className='android.widget.EditText',resourceId=self.appconfig.id("Browser","id_url")) 
+        url_text = self.device(className='android.widget.EditText',resourceId=self.appconfig.id("id_url")) 
         if url_text.wait.exists(timeout=self.timeout):    
             url_text.set_text(website)
             self.device.delay(3)
@@ -129,9 +130,9 @@ class Browser(Common):
         """enter node of menu
         """
         self.logger.debug('enter menu: '+ menu_text)
-        if self.device(text = self.appconfig("Browser","bookmarks_title")).exists:
+        if self.device(text = self.appconfig("bookmarks_title")).exists:
             return True
-        self.device(description=self.appconfig("Browser","options")).click()
+        self.device(description=self.appconfig("options")).click()
         if self.device(text=menu_text).wait.exists(timeout = self.timeout):          
             self.device(text=menu_text).click()
         else:
@@ -150,7 +151,7 @@ class Browser(Common):
         if bookmark.wait.exists(timeout=self.timeout):
             bookmark.click()
             self.logger.debug('loading...')
-            progress = self.device(resourceId=self.appconfig.id("Browser","id_progress"))     
+            progress = self.device(resourceId=self.appconfig.id("id_progress"))     
             if progress.wait.exists(timeout=self.timeout):
                 if not progress.wait.gone(timeout=30000):
                     self.logger.debug("Bookmark %s load failed!"%number)
@@ -164,7 +165,7 @@ class Browser(Common):
         for index in range(times):
             try:
                 if self.select_bookmark(0):
-                    self.device.press.back()
+#                     self.device.press.back()
                     self.clear_data()
                     self.suc_times += 1
                     self.logger.info("Trace Success Loop "+ str(index+1))                        

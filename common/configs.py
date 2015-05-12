@@ -76,11 +76,12 @@ class GetConfigs(object):
         in the section.
         """
         config = ConfigParser()
+        print self.testtype
         if self.testtype == "STABILITY" or self.testtype == "MINI":
 #             config.read(sys.path[-1] + "\\"+self.testtype+"_"+self.networktype+".ini")
             config.read(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"configure","%s_%s.ini"%(self.testtype,self.networktype)))
         else:
-#             config.read(sys.path[-1] + "\\"+self.testtype+".ini")
+#             config.read(sys.path[-1] + "\\"+self.testtype+".ini")            
             config.read(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"configure","%s.ini"%self.testtype))
         item = config.items(self.module)
         return dict(item)

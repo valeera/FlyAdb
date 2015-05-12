@@ -44,7 +44,7 @@ class Media():
         self.logger.debug("Record video 30s "+str(times)+' Times')
         if self.camera.enter():
             try:
-                #self.camera.switch('video')
+#                 self.camera.switch('video')
                 for loop in range(times):
                     self.logger.debug("Taking video")
                     if not self.camera.record_video(30):
@@ -122,8 +122,12 @@ class Media():
             try:
                 for loop in range(times):
                     if self.camera.preview():
-                        if self.device(resourceId = self.appconfig.id("Camera","id_view")).child(className = "android.widget.ImageView",index=1).wait.exists(timeout = 2000):
-                            self.device.click(600,600)
+                        if self.device(resourceId = self.appconfig.id("id_view","Camera")).child(className = "android.widget.ImageView",index=1).wait.exists(timeout = 2000):
+                            if self.product == "Alto5GL":
+                                self.device.click(250,300)
+                            else:
+                                
+                                self.device.click(600,600)
                         if self.device(description = "Share with").wait.exists(timeout = 2000):  
                             self.logger.info("Trace Success Loop "+ str(loop+1))
                             self.suc_times += 1
@@ -214,16 +218,17 @@ class Media():
         for loop in range(times):
             if self.chrome.enter():
                 try:
+                    self.device.delay(2)
                     self.chrome.chrome_webpage(self.appconfig("steamaddress","Media"))
                     self.device.delay(5)
                     if self.product == "Sprints":
                         self.device.click(350,530)
                     else:
-                        self.device.click(540,890)
-                    self.device.delay(5)
+                        self.device.click(235,350)
+                    self.device.delay(10)
                     if self.chrome.is_playing_video():
                         self.logger.debug("Streaming playing...")
-                        self.device.delay(25)
+                        self.device.delay(20)
                         self.chrome.logger.info("Trace Success Loop "+ str(loop+1))
                         self.suc_times += 1
                     else:
@@ -276,7 +281,8 @@ class Media():
 #             common.common.log_traceback(traceback.format_exc())
   
 if __name__ == '__main__':
-    a = Media("a7c0c6cf","Media")      
-    a.record_audio(1)
-    a.play_audio(1)
-    a.del_audio(1)
+    a = Media("adede7a6","Media")   
+#     a.play_music(1)
+#     a.record_audio(1)
+#     a.play_audio(1)
+    a.del_audio(2)

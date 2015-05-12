@@ -9,38 +9,88 @@ class Email(Common):
 
     """Provide common functions involved email."""  
 
-    def setup(self,accountName,password):
+    def setup(self,accountName,password,type = "pop3"):      
         self.enter()
-        step1 = [
-                {"id":{"text":self.appconfig("mail_type","Email")}},
-                {"id":{"resourceId":self.appconfig.id("id_next","Email")}},
-                {"id":{"resourceId":"com.android.email:id/account_email"},"action":{"type":"set_text","param":[accountName]}},
-                {"id":{"resourceId":"com.android.email:id/next"}},
-                {"id":{"text":"POP3"}},
-                {"id":{"resourceId":"com.android.email:id/regular_password"},"action":{"type":"set_text","param":[password]}},
-                {"id":{"resourceId":"com.android.email:id/next"},"delay":5000}, 
-                {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"clear_text"},"delay":5000},  
-                {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"set_text","param":[self.appconfig("mail_server")]}},                     
-                ]
-        if UIParser.run(self,step1, self.back_to_mainapp)==False:
-            return False
-        self.device(scrollable=True).scroll.vert.to(description="Next")
-        step2 = [
-                {"id":{"description":"Next"},"delay":10000},     
-                {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"clear_text"},"delay":5000},             
-                {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"set_text","param":[self.appconfig("mail_server")]}},                          
-                ]
-        if UIParser.run(self,step2, self.back_to_mainapp)==False:
-            return False
-        self.device(scrollable=True).scroll.vert.to(description="Next")
-        step3 = [
-                {"id":"description","resourceId":["Next","Next"],"delay":10000},
-                {"id":{"resourceId":"com.android.email:id/account_name"},"action":{"type":"set_text","param":"CreatedByUIA"}},
-                {"id":"description","resourceId":["Next","Next"]}               
-                ]
-        if UIParser.run(self,step3, self.back_to_mainapp)==False:
-            return False
-        
+        if type == "pop3":
+            step1 = [
+                    {"id":{"text":self.appconfig("mail_type","Email")}},
+                    {"id":{"resourceId":self.appconfig.id("id_next","Email")}},
+                    {"id":{"resourceId":"com.android.email:id/account_email"},"action":{"type":"set_text","param":[accountName]}},
+                    {"id":{"resourceId":"com.android.email:id/next"}},
+                    {"id":{"text":"POP3"}},
+                    {"id":{"resourceId":"com.android.email:id/regular_password"},"action":{"type":"set_text","param":[password]}},
+                    {"id":{"resourceId":"com.android.email:id/next"},"delay":5000}, 
+                    {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"clear_text"},"delay":5000},  
+                    {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"set_text","param":[self.appconfig("mail_server")]}},                     
+                    ]
+
+            if UIParser.run(self,step1, self.back_to_mainapp)==False:
+                return False
+            self.device(scrollable=True).scroll.vert.to(description="Next")
+            step2 = [
+                    {"id":{"description":"Next"},"delay":10000},     
+                    {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"clear_text"},"delay":5000},             
+                    {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"set_text","param":[self.appconfig("mail_server")]}},                          
+                    ]
+            if UIParser.run(self,step2, self.back_to_mainapp)==False:
+                return False
+            self.device(scrollable=True).scroll.vert.to(description="Next")
+            step3 = [
+                    {"id":"description","resourceId":["Next","Next"],"delay":10000},
+                    {"id":{"resourceId":"com.android.email:id/account_name"},"action":{"type":"set_text","param":"CreatedByUIA"}},
+                    {"id":"description","resourceId":["Next","Next"]}               
+                    ]
+            if UIParser.run(self,step3, self.back_to_mainapp)==False:
+                return False
+        elif type == "exchange":
+            step1 = [
+                    {"id":{"resourceId":"com.android.email:id/account_email"},"action":{"type":"set_text","param":[accountName]}},             
+                    {"id":"text","content":["Manual setup","Exchange"]},
+                    {"id":{"resourceId":"com.android.email:id/regular_password"},"action":{"type":"set_text","param":[password]}},
+                    {"id":{"resourceId":"com.android.email:id/next"},"delay":5000},              
+                    {"id":{"resourceId":"com.android.email:id/account_username"},"action":{"type":"clear_text"},"delay":5000},  
+                    {"id":{"resourceId":"com.android.email:id/account_username"},"action":{"type":"set_text","param":[accountName]}}, 
+                    {"id":"meta","content":"back"},
+                    {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"clear_text"},"delay":5000},  
+                    {"id":{"resourceId":"com.android.email:id/account_server"},"action":{"type":"set_text","param":["mail.tcl.com"]}},                    
+                    {"id":"meta","content":"back"},
+                    {"id":{"description":"Security type"}},   
+                    {"id":{"text":"SSL/TLS (Accept all certificates)"}}, 
+                    ]
+            if UIParser.run(self,step1, self.back_to_mainapp)==False:
+                return False
+            self.device(scrollable=True).scroll.vert.to(description="Next")
+            step3 = [
+                    {"id":{"description":"Next"}},     
+                    {"id":{"text":"OK"},"wait":60000},
+                    {"id":{"resourceId":"com.android.email:id/account_check_frequency"}},   
+                    {"id":{"text":"Manual"}},
+                    {"id":{"resourceId":"com.android.email:id/account_sync_window"}},   
+                    {"id":{"text":"All"}},                    
+                                                      
+                    ]
+            if UIParser.run(self,step3, self.back_to_mainapp)==False:
+                return False            
+            self.device(scrollable=True).scroll.vert.to(description="Next")
+            step4 = [
+                    {"id":{"description":"Next"}},   
+                    {"id":{"text":"Activate"},"wait":10000},                   
+                    {"id":{"description":"Next"},"wait":30000},                                         
+                                                       
+                    ]
+            if UIParser.run(self,step4, self.back_to_mainapp)==False:
+                return False           
+            self.device.delay(60)
+            self.select_mail(0)
+            self.device.delay(5)
+            self.select_mail(1)           
+            step5 = [
+                    {"id":{"resourceId":"com.android.email:id/attachment_icon"},"wait":30000},                                       
+                                                       
+                    ]
+            if UIParser.run(self,step5, self.back_to_mainapp)==False:
+                return False               
+            self.back_to_mainapp()
         return True
     
     def enter(self):
@@ -64,7 +114,7 @@ class Email(Common):
         if not self.device(text=box, index=2).exists:
             if self.device(description='Open navigation drawer').wait.exists(timeout=5000):
                 self.device(description='Open navigation drawer').click()
-            if self.device(resourceId="com.tct.email:id/account_display_name").wait.exists(timeout = self.timeout):
+            if self.device(resourceId="com.android.email:id/account_display_name").wait.exists(timeout = self.timeout):
                 self.device(text=box).click()
             else:
                 self.logger.warning("==========================")
@@ -76,14 +126,17 @@ class Email(Common):
             self.logger.warning("Cannot change to box: %s" %box)
             return False
         return True
+
+    def back(self):
+        self.device.press.back()
+        return True
     
     def back_to_mainapp(self):
         self.logger.debug("Back to main activity")
         for i in range(5):
-            if self.device(resourceId = self.appconfig.id("id_search")).exists:
+            if self.device(resourceId = self.appconfig.id("id_search")).wait.exists(timeout = 2000):
                 return True
             self.device.press.back()
-            self.device.delay(1)
         else:
             self.logger.warning("Cannot back to main activity")
             return False
@@ -93,7 +146,7 @@ class Email(Common):
         ui_loading = self.device(resourceId = self.appconfig.id("id_loading","Email"))
         if ui_loading.exists:
             self.logger.debug('loading mail')
-            if not ui_loading.wait.gone(timeout = 30000):
+            if not self.device(resourceId = self.appconfig.id("id_loading","Email")).wait.gone(timeout = 60000):
                 self.logger.debug('loading mail Failed')
                 return False 
         return True
@@ -111,8 +164,10 @@ class Email(Common):
             self.device.delay(1)
         self.logger.debug('create an email')
         if att_flag:
+            self.logger.debug('111111')
             self.device(className='android.widget.ListView').child(className='android.widget.FrameLayout',index=0).click()
         else:
+            self.logger.debug('000000')
             self.device(className='android.widget.ListView').child(className='android.widget.FrameLayout',index=1).click()
         if self.device(resourceId=self.appconfig.id("id_overflow")).wait.exists(timeout = 5000):
             self.device(resourceId=self.appconfig.id("id_overflow")).click()
@@ -160,8 +215,11 @@ class Email(Common):
             self.device(text = "Empty Trash").click()
             if self.device(text = "Delete").wait.exists(timeout = self.timeout):
                 self.device(text = "Delete").click()
+                self.device.delay(2)
             if self.device(text='No connection.').exists:
                 return False  
+            if self.device(text='No connection.').wait.exists(timeout = 30000):
+                return False
         else:          
             maxtime=0
 #             while not self.device(textContains = self.appconfig("Email","empty_text")).exists:
@@ -237,6 +295,6 @@ class Email(Common):
 
 #test--------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    a = Email("a7ffc62c","Email")
-    a.setup("atttest05@tcl.com", "Password001")
+    a = Email("a7c0c6cf","Email")
+    a.setup("atttest08@tcl.com", "Password001","exchange")
     #a.open_email(2)

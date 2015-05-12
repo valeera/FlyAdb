@@ -16,7 +16,7 @@ class Telephony(Common):
         self.logger.debug("Enter Dialer")
         if self.device(resourceId= self.appconfig.id("id_enter","Dialer")).exists:
             return True
-        self.start_app("Phone")
+        self.start_app(self.appconfig("name","Dialer"))
         self.device.delay(2)
         if self.device(resourceId= self.appconfig.id("id_enter","Dialer")).exists:
             return True
@@ -29,7 +29,7 @@ class Telephony(Common):
             self.device(text = "All contacts").click()
             self.device.delay(1)
             return True
-        self.start_app("Contacts")
+        self.start_app(self.appconfig("name","Contacts"))
         self.device.delay(2)
         if self.device(text = "All contacts").exists:
             self.device(text = "All contacts").click()
@@ -49,7 +49,7 @@ class Telephony(Common):
 
     def setup_contacts(self):
         self.logger.debug("setup Contacts")
-        self.adb.cmd("push",os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"File"), '/sdcard/Music')
+#         self.adb.cmd("push",os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"File"), '/sdcard/Music')
         self.enter_contacts()
         contacts = [
                 {"id":{"description":"More options"}},
@@ -58,7 +58,8 @@ class Telephony(Common):
 
         store = [
                 {"id":"description","content":"add new contact"},
-                {"id":{"text":"PHONE"}}
+                {"id":{"text":"PHONE"},"assert":False},
+                {"id":{"text":"OK"},"assert":False},    
                 ]
         UIParser.run(self, [contacts,store],self.back_to_contact)
         self.back_to_contact()
@@ -126,15 +127,15 @@ class Telephony(Common):
         self.logger.debug("Dial Number %s." % number)
         
         step = [
-                {"id":{"text":'Speed Dial'}},
-                {"id":{"description":'dial pad'}},             
+                {"id":{"text":self.appconfig("speed_dial","Dialer")}},
+                {"id":{"description":self.appconfig("dial_pad","Dialer")}},             
                 {"id":{"resourceId":"com.android.dialer:id/digits"},"action":{"type":"set_text","param":[number]}},                
-                {"id":{"description":'dial'}}, 
+                {"id":{"description":self.appconfig("dialpad_name","Dialer")}}, 
                 ]
         UIParser.run(self, step, self.back_to_contact)
         if self.device(description='End').wait.exists(timeout=self.timeout):
             self.logger.debug('Outgoing call success from dialer')
-            self.device(description='End').click()
+#             self.device(description='End').click()
             return True
         else:
             self.logger.debug('Outgoing call fail from dialer')
@@ -159,7 +160,7 @@ class Telephony(Common):
        
     def _call_history(self):
         self.logger.debug('call from calllog')
-        self.device(text='Recents').click()
+        self.device(text=self.appconfig("recent","Dialer")).click()
         self.device.delay(2)
         if self.device(className = "android.widget.LinearLayout", index = 1).exists:
             self.device(className = "android.widget.LinearLayout", index = 1).click()
@@ -178,7 +179,6 @@ class Telephony(Common):
     def _call_contact(self,Index):
         '''select a contact for call
         '''
-        print 111111111111111111111111111
         contact_name = "Autotest%02d" % (Index+1)
         self.logger.debug('make call from contact %s' %contact_name)
         if self.device(text = "All contacts", selected = "false").exists:
@@ -242,7 +242,7 @@ class Telephony(Common):
                     self.enter_contacts()      
                 name = random_name(loop)       
                 step = [
-                        {"id":{"description":"add new contact"}},
+                        {"id":{"resourceId":"com.android.contacts:id/floating_action_button"}},
                         {"id":{"text":"Name","className":"android.widget.EditText"},"action":{"type":"set_text","param":[name]}},
                         {"id":{"text":"Phone","className":"android.widget.EditText"},"action":{"type":"set_text","param":[Configs("common").get("sdevice_num","Telephony")]}},               
                         {"id":{"description":"Done"}}           
@@ -342,7 +342,8 @@ class Telephony(Common):
                       
          
 if __name__ == '__main__':
-    a = Telephony("a7c0c64c","Telephony")
-    #a.delete_contact(2)
-    a.setup_contacts()                       
+    a = Telephony("e7cdca9a","Telephony")
+    
+    a.call_from_dialer(10010)
+#     a.setup_contacts()                       
     

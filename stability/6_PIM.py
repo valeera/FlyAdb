@@ -14,7 +14,7 @@ class TestPim(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         serino = "MDEVICE"
-        #serino = "a7ffc62c"
+        #serino = "adede7a6"
         if len(sys.argv)>1:
             serino = sys.argv[1] 
         cls.mod = Schedule(serino, "Pim")
@@ -34,23 +34,22 @@ class TestPim(unittest.TestCase):
 
     def tearDown(self):
         self.mod.back_to_home()
- 
-    @unittest.skip("demonstrating skipping")      
+     
     def testAddCalendar(self):
         times = int(self.mod.dicttesttimes.get("add_calendar",0))
 #         self.assertTrue(times>0)
         self.mod.add_calendars(times)
-    @unittest.skip("demonstrating skipping")      
+       
     def testDelCalendar(self):
         times = int(self.mod.dicttesttimes.get("add_calendar",0))
 #         self.assertTrue(times>0)
         self.mod.delete_calendars(times)
-    
+     
     def testAddAlarm(self):
         times = int(self.mod.dicttesttimes.get("add_alarm",0))
 #         self.assertTrue(times>0)
         self.mod.add_alarms(times)
-     
+      
     def testDelAlarm(self):
         times = int(self.mod.dicttesttimes.get("del_alarm",0))
 #         self.assertTrue(times>0)
@@ -58,8 +57,8 @@ class TestPim(unittest.TestCase):
 
 if __name__ == '__main__':
     loader = unittest.TestLoader()
-    loader.sortTestMethodsUsing = None
     suiteCase = loader.loadTestsFromTestCase(TestPim)
+    loader.sortTestMethodsUsing = None
     suite = unittest.TestSuite([suiteCase]) 
     unittest.TextTestRunner(verbosity=2).run(suite) 
     

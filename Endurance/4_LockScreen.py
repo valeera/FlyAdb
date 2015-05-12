@@ -54,8 +54,13 @@ class LockScreen(unittest.TestCase):
                 self.mod.logger.warning("Cannot wake device")
                 self.mod.save_fail_img()
                 continue
-            self.mod.device.swipe(540,1845,540,45,steps=20)
-            if self.mod.device(resourceId='com.tct.launcher:id/page_indicator').wait.exists(timeout=3000):
+            if self.mod.product == "Sprints":
+                self.mod.device.swipe(350,1000,350,200,steps=20)
+            elif self.mod.product == "Alto5GL":
+                self.mod.device.swipe(250,750,250,200,steps=20)
+            else:
+                self.mod.device.swipe(540,1845,540,45,steps=20)
+            if self.mod.device(resourceId='com.android.launcher3:id/page_indicator').wait.exists(timeout=3000) or self.mod.device(resourceId='com.tct.launcher:id/dock_indicator').exists:
                 self.mod.suc_times = self.mod.suc_times + 1
                 self.mod.logger.info("Trace Success Loop %s." % (i+1))
                 self.mod.device.delay(2)

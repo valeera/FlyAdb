@@ -14,8 +14,8 @@ from common.statusbar import StatusBar
 class WifiEndurance(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        #serino = "MDEVICE"
-        serino = "a7c0c6cf"
+        serino = "MDEVICE"
+        #serino = "a7c0c6cf"
         if len(sys.argv)>1:       
             serino = sys.argv[1] 
         cls.mod = Wifi(serino, "Set_WifiConnect")
@@ -46,7 +46,8 @@ class WifiEndurance(unittest.TestCase):
         self.mod.enter()
         for i in range(test_times):
             if self.mod._switch():
-                self.mod.device(scrollable=True).scroll.vert.toBeginning(steps=10)
+                if self.mod.device(scrollable=True).exists:
+                    self.mod.device(scrollable=True).scroll.vert.toBeginning(steps=10)
                 if self.mod.device(text="Connected").wait.exists(timeout=10000):
                     self.mod.logger.debug('wifi connect success!!!')
                     self.mod.device.delay(10)

@@ -29,10 +29,12 @@ class Camera(Common):
     def back_to_camera(self):
         self.logger.debug("Back to camera")
         for i in range(5):
-            if not self.device(description = "Navigate up").wait.exists(timeout=1000):
-                self.adb.shell("input tap 540 450")
-                if not self.device(description = "Navigate up").wait.exists(timeout=1000):
-                    return True
+            if self.device(description=self.appconfig("shutter_action","Camera")).exists:
+                return True           
+#             if not self.device(description = "Navigate up").exists:
+#                 self.adb.shell("input tap 540 450")
+#                 if not self.device(description = "Navigate up").exists:
+#                     return True
             self.device.press.back()
             self.device.delay(1)
         else:
@@ -102,10 +104,13 @@ class Camera(Common):
         """         
         self.logger.debug('take photo')
         filenumber = self.get_photo_number()
-        if self.device(description= "Camera, video, or panorama selector").wait.exists(timeout = self.timeout):
-            self.device(description= "Camera, video, or panorama selector").click()
-            if self.device(description= "Switch to photo").wait.exists(timeout = self.timeout):
-                self.device(description= "Switch to photo").click()
+        if self.product == "Alto5GL":
+            self.switch_mode("photo")
+        else:
+            if self.device(description= "Camera, video, or panorama selector").wait.exists(timeout = self.timeout):
+                self.device(description= "Camera, video, or panorama selector").click()
+                if self.device(description= "Switch to photo").wait.exists(timeout = self.timeout):
+                    self.device(description= "Switch to photo").click()
         if self.device(resourceId=self.appconfig.id("id_shutter","Camera")).wait.exists(timeout = self.timeout):
             self.device(resourceId=self.appconfig.id("id_shutter","Camera")).click()
         self.device.delay(5)
@@ -119,10 +124,17 @@ class Camera(Common):
         """enter preview mode
         """   
         self.logger.debug('enter preview mode')
-        self.adb.shell('input swipe 650 600 50 600')
+        if self.product == "Alto5GL":
+            
+            self.adb.shell('input swipe 400 300 100 300')
+        else:
+            self.adb.shell('input swipe 650 600 50 600')
         maxtimes=0
         while not self.device(resourceId=self.appconfig.id("id_action_delete","Camera")).wait.exists(timeout = 2000):
-            self.adb.shell('input swipe 650 600 50 600')
+            if self.product == "Alto5GL":           
+                self.adb.shell('input swipe 400 300 100 300')
+            else:
+                self.adb.shell('input swipe 650 600 50 600')
             maxtimes+=1
             if maxtimes>5:
                 self.logger.debug('enter preview mode failed!')
@@ -155,15 +167,18 @@ class Camera(Common):
         argv: (int)recordTime --time of the video
         """ 
         self.logger.debug('record video')
-        filenumber = self.get_video_number()   
-        if self.device(description= "Camera, video, or panorama selector").wait.exists(timeout = self.timeout):
-            self.device(description= "Camera, video, or panorama selector").click()
-            if self.device(description= "Switch to video").wait.exists(timeout = self.timeout):
-                self.device(description= "Switch to video").click()
-            if self.device(resourceId=self.appconfig.id("id_shutter","Camera")).wait.exists(timeout = self.timeout):
-                self.device(resourceId=self.appconfig.id("id_shutter","Camera")).click()
-        else:      
-            self.device(resourceId=self.appconfig.id("id_camera_video_switch_icon","Camera")).click()
+        filenumber = self.get_video_number()
+        if self.product == "Alto5GL":
+            self.switch_mode("video")
+        else:           
+            if self.device(description= "Camera, video, or panorama selector").wait.exists(timeout = self.timeout):
+                self.device(description= "Camera, video, or panorama selector").click()
+                if self.device(description= "Switch to video").wait.exists(timeout = self.timeout):
+                    self.device(description= "Switch to video").click()
+        if self.device(resourceId=self.appconfig.id("id_shutter","Camera")).wait.exists(timeout = self.timeout):
+            self.device(resourceId=self.appconfig.id("id_shutter","Camera")).click()
+#             else:      
+#                 self.device(resourceId=self.appconfig.id("id_camera_video_switch_icon","Camera")).click()
         if not self.device(resourceId = self.appconfig.id("id_recording_time","Camera")).wait.exists(timeout = 2000):
             self.logger.warning("Fail to start recording!")
             return False
@@ -192,7 +207,7 @@ class Camera(Common):
                 self.device.delay(1)
             if self.device(text='Just once').exists:
                 self.device(text='Just once').click()
-                self.device.delay(2)
+            self.device.delay(2) 
             if self.is_playing_video():
                 self.logger.debug('Video Playing...')
                 self.device.delay(duration)
@@ -223,14 +238,13 @@ class Camera(Common):
                 return False
 
 if __name__ == '__main__':
-    a = Camera("a7c0c6cf","Media")
-    a.enter()
+    a = Camera("adede7a6","Media")
+#     a.enter()
 #     a.switch("video")
 #     a.switch("video")
 #     a.switch("photo")
-    a.take_photo()
-    a.open_photo()
+#     a.take_photo()
 #     a.del_picture()
-    a.record_video(10)
+#     a.record_video(10)
     a.play_video()
-    a.del_video()
+#     a.del_video()

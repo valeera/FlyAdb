@@ -11,12 +11,16 @@ class Music(Common):
         """Launch music by StartActivity.
         """          
         self.logger.debug('enter music')
-        if self.device(resourceId="com.alcatel.music5:id/action_search").wait.exists(timeout = 5000):
+        if self.device(resourceId="com.tct.music:id/scan_icon").wait.exists(timeout = 5000):
             return True
-        self.start_app("Mix",b_desk=False)
-        if self.device(resourceId="com.alcatel.music5:id/action_search").wait.exists(timeout = 5000):
+        self.start_app("Music",b_desk=False)
+        if self.device(resourceId="com.tct.music:id/scan_icon").wait.exists(timeout = 5000):
             return True
         else:
+            navigate_home = self.device(description = self.appconfig("navigate_home","Music"))
+            if navigate_home.exists:
+                navigate_home.click()
+                return True
             self.logger.warning('enter music fail!')
             return False
     
@@ -24,9 +28,9 @@ class Music(Common):
         self.logger.debug("Enter the music library")
         if self.device(description="Open navigation drawer").exists:
             self.device(description="Open navigation drawer").click()
-        if self.device(resourceId="com.alcatel.music5:id/navigation_drawer").exists:
-            self.device(text=self.appconfig("Music","library")).click()
-            if self.device(resourceId="com.alcatel.music5:id/shuffle_all_btn").wait.exists(timeout = self.timeout):
+        if self.device(text=self.appconfig("library","Music")).exists:
+            self.device(text=self.appconfig("library","Music")).click()
+            if self.device(resourceId="android:id/action_bar").wait.exists(timeout = self.timeout):
                 return True
         self.logger.warning("Cannot enter the library")
         return False
@@ -35,16 +39,20 @@ class Music(Common):
         """paly music 
         """
         self.logger.debug('play music')
-
-        music_num = self.device(resourceId="com.alcatel.music5:id/item_recycler_parent_view").count
-        music_index = Index % music_num + 1
-        music_name = self.device(resourceId="com.alcatel.music5:id/recycler_view").child(resourceId="com.alcatel.music5:id/item_recycler_parent_view",index=music_index).child(resourceId="com.alcatel.music5:id/title_text_view").get_text()
-        self.device(resourceId="com.alcatel.music5:id/recycler_view").child(resourceId="com.alcatel.music5:id/item_recycler_parent_view",index=music_index).click()
+        
+        music_num = self.device(resourceId="com.tct.music:id/music_setting_image").count
+        Index = Index % music_num
+        if self.device(className=self.appconfig('class_library_view',"Music")).wait.exists(timeout = self.timeout):  
+            music_name = self.device(resourceId="android:id/list").child(index=Index).child(index=1).child(resourceId="com.tct.music:id/line1").get_text()         
+            self.device(resourceId="android:id/list").child(index=Index).child(index=1).child(resourceId="com.tct.music:id/line1").click() 
         self.device.delay(5)
-        playing_name = self.device(resourceId="com.alcatel.music5:id/sliding_up_content_container").child(resourceId="com.alcatel.music5:id/title_text_view").get_text()
+        playing_name = self.device(resourceId="com.tct.music:id/title").get_text()
         if music_name == playing_name:
             self.logger.debug("Playing: %s" %music_name)
-            self.device.delay(10)
+            if self.device(resourceId=self.appconfig.id("id_play","Music")).wait.exists(timeout = self.timeout):
+                self.logger.debug("Play music success")
+                self.device(resourceId=self.appconfig.id("id_play","Music")).click()
+                return True
             return True
         else:
             self.logger.debug("play music fail: %s" %music_name)
@@ -53,10 +61,25 @@ class Music(Common):
     def _exit(self):
         """exit music 
         """
-        self.back_to_home()
-        if self.device(packageName = self.appconfig("Music","package")).wait.gone(timeout = self.timeout):
-            return True
+        options = self.device(resourceId = self.appconfig.id("id_options","Music"))
+        exit_action = self.device(text=self.appconfig("exit_action","Music"))
+        if options.exists:
+            options.click()
+            if exit_action.wait.exists(timeout = self.timeout):
+                exit_action.click()
+            if self.device(packageName = self.appconfig("package","Music")).wait.gone(timeout = self.timeout):
+                return True
         return False
+
+    def close(self):
+        """close music 
+        """
+        self.logger.debug('close music')
+        navigate_home = self.device(description = self.appconfig("navigate_home","Music"))
+        if navigate_home.exists:
+            navigate_home.click()
+        return self._exit()
+
     
     def is_playing_music(self):
         """check if music is playing or not.
@@ -70,16 +93,6 @@ class Music(Common):
         else:
             self.logger.debug("The music is not playing.")
             return False
-
-    def close(self):
-        """close music 
-        """
-        self.logger.debug('close music')
-        if self.is_playing_music():
-            self.logger.debug('Stop music play')
-            self.device(resourceId="com.alcatel.music5:id/track_play_pause_image_btn").click()
-            self.device.delay(2)
-        return self._exit()
 
 
 class PlayMusic(Common):
@@ -176,9 +189,17 @@ class PlayMusic(Common):
         return self._exit()
 
 if __name__ == '__main__':
-    a = PlayMusic("a7c0c6cf","Music")
-    a.enter()
-    a.enter_library()
-    a.play(2)
-    a.close()
-            
+#     a = Music("adede7a6","Music")
+#     a.enter()
+#     a.enter_library()
+#     a.play(2)
+#     a.close()
+#         
+    s = "message23"
+    
+    a = re.findall(r"(.*)_.*", s,re.I);
+    if a:
+        print a[0]
+    
+    
+    

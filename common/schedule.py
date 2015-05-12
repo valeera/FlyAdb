@@ -32,7 +32,7 @@ class Schedule(Common):
         """Switch to specified view.
         """
         def _check_view_type(strsort):
-            if (strsort == "Agenda" and self.device(resourceId= self.appconfig.id("id_switch_agenda","Calendar")).exists):
+            if ((strsort == "Agenda" or strsort == "Schedule") and self.device(resourceId= self.appconfig.id("id_switch_agenda","Calendar")).exists):
                 return True
             elif (strsort == "Week" and
                 self.device(resourceId= self.appconfig.id("id_switch_week","Calendar")).exists):
@@ -65,8 +65,7 @@ class Schedule(Common):
             if self.device(text = "New event").wait.exists(timeout = self.timeout):
                 self.device(text = "New event").click()
                 if self.device(text = "No calendars").wait.exists(timeout = 2000):
-                    self.device(text = "Cancel").click()                
-            
+                    self.device(text = "Cancel").click()  
         self.logger.debug('input event name')
         self.device.delay(2)
         self.device(text= self.appconfig("create_event_name_text","Calendar")).set_text(event_name)
@@ -74,33 +73,36 @@ class Schedule(Common):
         self.logger.debug('select calendar date')
         if not self.device(resourceId= "com.tct.calendar:id/start_date").exists:
             self.device.press.back()
-        if self.device(resourceId="com.tct.calendar:id/start_date").wait.exists(timeout=self.timeout):
-            self.device(resourceId="com.tct.calendar:id/start_date").click()
-        if self.device(resourceId="com.tct.calendar:id/animator").wait.exists(timeout=5000):
-            self.device(resourceId="com.tct.calendar:id/animator").child(index=0).child(index=0).child(index=Index).click()
+        if self.device(resourceId=self.appconfig.id("start_date","Calendar")).wait.exists(timeout=self.timeout):
+            self.device(resourceId=self.appconfig.id("start_date","Calendar")).click()
+        if self.device(resourceId=self.appconfig.id("animator","Calendar")).wait.exists(timeout=5000):
+            self.device(resourceId=self.appconfig.id("animator","Calendar")).child(index=0).child(index=0).child(index=Index).click()
         self.device(resourceId= self.appconfig.id("id_done","Calendar")).click()
         self.device.delay(2)
         self.logger.debug('Save calendar')
-        self.device(resourceId= self.appconfig.id("id_action_done","Calendar")).click()
-        self.device.delay(2)    
-        self.device(text="Agenda").click()
+        if self.device(resourceId= self.appconfig.id("id_action_done","Calendar")).exists:
+            self.device(resourceId= self.appconfig.id("id_action_done","Calendar")).click()
+            self.device.delay(2) 
+            if self.device(text="Agenda").exists: 
+                self.device(text="Agenda").click()
         self.device.delay(2)
-        if self.device(scrollable=True).exists:
-            self.device(scrollable=True).scroll.to(text=event_name)
         if self.device(text=event_name).exists:
             return True
+        elif self.device(resourceId= self.appconfig.id("id_switch_agenda","Calendar"),scrollable=True).exists:
+            self.device(resourceId= self.appconfig.id("id_switch_agenda","Calendar"),scrollable=True).scroll.to(text=event_name)
+            if self.device(text=event_name).exists:
+                return True
         else:
             self.logger.warning("Cannot find the calendar added.")
             return False
 
     def delete_calendar(self,name=None):
         self.logger.debug('delete calendar:%s' %name)
-        if self.device(scrollable=True).exists:
-            self.device(scrollable=True).scroll.vert.toBeginning(steps=10)
-            self.device(scrollable=True).scroll.vert.to(textStartsWith=name)
         if self.device(textStartsWith=name).exists:
             self.device(textStartsWith=name).click()
-        else:
+        elif self.device(resourceId= self.appconfig.id("id_switch_agenda","Calendar"),scrollable=True).exists:
+            self.device(scrollable=True).scroll.vert.toBeginning(steps=10)
+            self.device(scrollable=True).scroll.vert.to(textStartsWith=name)
             self.logger.warning("Cannot find the calendar %s" %name)
             return False
         if self.device(description= self.appconfig("delete_action","Calendar")).wait.exists(timeout=5000):
@@ -155,12 +157,11 @@ class Schedule(Common):
         self.logger.debug('delete a alarm')
         delete_action = self.appconfig("delete_action","Alarm")
         if not self.device(description = delete_action).exists:
-            self.device(resourceId= self.appconfig.id("delete_option","Alarm")).click()
-            self.device.delay(2)
-            print 1111111
-            if not self.device(description = delete_action).exists:
-                self.logger.debug('delete alarm fail!')
-                return False
+            self.device(resourceId= self.appconfig.id("delete_option","Alarm")).click()       
+        if not self.device(description = delete_action).wait.exists(timeout = self.timeout):
+            self.logger.debug('delete alarm fail!')
+            return False
+        self.device(description = delete_action).click()
         self.device.delay(2)
         delete_confirm = self.appconfig("delete_confirm","Alarm")
         if delete_confirm!=None and self.device(text= delete_confirm).exists:
@@ -169,7 +170,7 @@ class Schedule(Common):
 
     def add_calendars(self,times):
         self.logger.debug('Add an Calendar ' + str(times) + ' Times')
-        if self.enter_calendar() and self.switch_view("Agenda"):
+        if self.enter_calendar() and self.switch_view(self.appconfig("name","Calendar")):
             for loop in range (times):
                 try:
                     if self.create_schedule(random_name(loop),loop):
@@ -186,8 +187,8 @@ class Schedule(Common):
     
     def delete_calendars(self,times):
         self.logger.debug('Del an Calendar ' + str(times) + ' Times')
-        if self.enter_calendar():
-            self.device(text="Agenda").click()
+        if self.enter_calendar() and self.switch_view(self.appconfig("name","Calendar")):
+#             self.device(text="Agenda").click()
             for loop in range (times):
                 try:
                     cal_name = "Autotest%02d" %(loop+1)
@@ -238,7 +239,9 @@ class Schedule(Common):
         return True    
        
 if __name__ == '__main__':
-    a = Schedule("a7c0c6cf","Schedule")
-    a.add_calendars(5)
-    #a.delete_calendars(5)
+    a = Schedule("f8e3ecd8","Schedule")
+#     a.add_calendars(5)
+#     a.delete_calendars(5)
+    a.delete_alarms(2)
+
     

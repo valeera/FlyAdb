@@ -69,13 +69,18 @@ class UIParser():
             elif param["id"] == "meta":
                 resault = resault and getattr(obj,param["content"])(*param["action"]["param"] if param.has_key("action") and param["action"].has_key("param") else [])
             else:
+                print param
                 if param_parser(param["id"])=={}:
                     return True
                 select = device(**{param["id"]:param["content"]})
-                action=select.wait.exists(timeout = 5000) if not param.has_key("wait") or (param.has_key("wait") and param["wait"]) else True
+                #action=select.wait.exists(timeout = 5000) if ((not param.has_key("wait")) or ((param.has_key("wait") and param["wait"]))) else select.wait.exists(timeout = int(param["wait"]))
+                action=select.wait.exists(timeout = 5000) if not param.has_key("wait") else select.wait.exists(timeout = int(param["wait"]))
+                print 1111
                 if action and not (param.has_key("action") and param["action"]==None):
+                    print 2222
                     getattr(select,"click")(None) if not param.has_key("action") else getattr(select,param["action"]["type"])(*param["action"]["param"] if param["action"].has_key("param") else [])
                     time.sleep(param["action"]["delay"] if param.has_key("aciton") and param["action"].has_key("delay") else 0)
+                print 3333
                 resault = resault and action
             return resault
         
@@ -96,7 +101,8 @@ class UIParser():
                 if param_parser(param["id"])=={}:
                     return True
                 select = device(**param["id"])
-                action=select.wait.exists(timeout = 5000) if not param.has_key("wait") or (param.has_key("wait") and param["wait"]) else True
+                #action=select.wait.exists(timeout = 5000) if ((not param.has_key("wait")) or ((param.has_key("wait") and param["wait"]))) else select.wait.exists(timeout = int(param["wait"]))    
+                action=select.wait.exists(timeout = 5000) if not param.has_key("wait") else select.wait.exists(timeout = int(param["wait"]))
                 if action and not (param.has_key("action") and param["action"]==None):
                     getattr(select,"click")(None) if not param.has_key("action") else getattr(select,param["action"]["type"])(*param["action"]["param"] if param["action"].has_key("param") else [])
                     time.sleep(param["action"]["delay"] if param.has_key("aciton") and param["action"].has_key("delay") else 0)
@@ -274,7 +280,7 @@ class Common(object):
         if b_desk and self.device(text=name).wait.exists(timeout = 2000):
             self.device(text=name).click()
             return True
-        elif b_desk and self.device(description=name).wait.exists(timeout = 2000):
+        elif b_desk and self.device(description=name).exists:
             self.device(text=name).click()
             return True
         elif self.device(description="ALL APPS").exists:
@@ -296,6 +302,43 @@ class Common(object):
                     self.device(description=name).click()
                     return True
                 self.device().fling.horiz.forward()     
+        return False
+
+    def back_to_all_apps(self):
+        """back_to_home.
+        """
+        for loop in range(4):
+            self.device.press.back()
+            if self.device(text = "ALL APPS").wait.exists(timeout = 2000):
+                return True
+            elif self.device(text = "exit").exists:
+                self.device(text = "exit").click()
+            elif self.device(text = "Quit").exists:
+                self.device(text = "Quit").click()
+            self.device.press.back()
+        
+
+    def start_all_app(self,num=3):
+        '''Call/People/ALL APPS/Messaging/Browser'''   
+        self.logger.debug("start all app")
+        if self.device(description="ALL APPS").exists:
+            self.device(description="ALL APPS").click()
+        elif self.device(description="Apps").exists:
+            self.device(description="Apps").click()
+            self.device().fling.horiz.toBeginning()
+        self.device().fling.horiz.toBeginning()
+        for i in range(num):         
+            for j in range(self.device(className="android.widget.TextView").count-2):  
+                if self.device(resourceId="com.tct.launcher:id/apps_customize_pane_content").child(index = 0).child(index = i).exists:
+                    self.device(resourceId="com.tct.launcher:id/apps_customize_pane_content").child(index = 0).child(index = i).child(index = j).click()
+                    self.device(text = "ALL APPS").wait.gone(timeout = 20000)
+                    self.back_to_all_apps()
+            self.device().fling.horiz.forward() 
+#         for loop in range(5):  
+#             if self.device(description=name).exists:
+#                 self.device(description=name).click()
+#                 return True
+#             self.device().fling.horiz.forward()     
         return False
 
     def select_menu_item(self, stritem):
@@ -367,16 +410,8 @@ class Common(object):
             return False
              
 if __name__ == "__main__":
-    #a = Common("56c051e1","Media")
-    #a.start_app("Sound Recorder")
+    a = Common("e7cdca9a","apps")
+    a.start_all_app()
 
-    #product = Configs("common").get("Info","product")
-    
-    p = {"c":None,"a":1,"b":2}
-    def param_parser(param):
-        for k,v in param.items():
-            if v == None:
-                param.pop(k)
-    param_parser(p)
-    print p         
+      
     

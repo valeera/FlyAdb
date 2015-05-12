@@ -15,7 +15,7 @@ class TestEmail(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         serino = "MDEVICE"
-        #serino = "a7c0c6cf"
+#         serino = "adede7a6"
         if len(sys.argv)>1:       
             serino = sys.argv[1] 
         cls.mod = Email(serino, "Email")

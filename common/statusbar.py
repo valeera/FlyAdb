@@ -4,14 +4,16 @@ class StatusBar(Common):
     '''
     classdocs
     '''
-
-
     def drag_down(self):
         self.logger.debug("Drag status bar down")
+        self.device.open.notification()
         for i in range(5):
             if self.device(resourceId="com.android.systemui:id/quick_settings_panel").exists:
                 return True
-            self.adb.shell("input swipe 540 50 540 1700")
+            if self.product == "Sprints":
+                self.adb.shell("input swipe 540 50 540 1700")
+            else:
+                self.adb.shell("input swipe 250 80 250 800")
             self.device.delay(1)
         else:
             self.logger.warning("Cannot drag status bar down")

@@ -13,7 +13,7 @@ class TestWifi(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         serino = "MDEVICE"
-        #serino = "a7c0c64c"
+        #serino = "adede7a6"
         if len(sys.argv)>1:         
             serino = sys.argv[1] 
         cls.mod = Wifi(serino, "Wifi")

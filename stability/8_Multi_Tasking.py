@@ -27,7 +27,7 @@ class MultiTask(Common):
             from common.chrome import Chrome
             self.browser = Chrome(self.device,"task_browser")
         else:
-            self.browser = Browser(self.device,"task_browser")
+            self.browser = Browser(self.device,"Browser")
         self.tel = Telephony(self.device,"task_tel")
         self.message = Message(self.device,"task_message")
         self.settings = Settings(self.device,"switch_nw")
@@ -118,9 +118,15 @@ class MultiTask(Common):
                         for i in range(3):
                             self.device.server.adb.shell("input swipe 350 400 350 1000")
                     else:
-                        self.device().fling.toBeginning(max_swipes=100)
+#                         self.device().fling.toBeginning(max_swipes=100)
+                        for i in range(3):
+                            self.device.server.adb.shell("input swipe 230 250 230 650")
+                    self.device.delay(2)
                     if self.device(resourceId='com.android.systemui:id/recents_view').child(index=0).child(index=3).exists:
-                        self.device.click(540,450)
+                        if self.product=="Sprints":
+                            self.device.click(540,450)
+                        else:
+                            self.device.click(230,280)
                         self.device.delay(2)
                     if not self.device(resourceId='com.android.systemui:id/recents_view').exists:
                         self.suc_times += 1
@@ -140,7 +146,7 @@ class TestMultiTask(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         serino = "MDEVICE"
-        #serino = "a7c0c6cf"
+#         serino = "adede7a6"
         if len(sys.argv)>1:         
             serino = sys.argv[1] 
         cls.mod = MultiTask(serino, "Tasking")
@@ -164,8 +170,8 @@ class TestMultiTask(unittest.TestCase):
     def tearDown(self):
         self.mod.back_to_home()
         
-    def testInteractionWithCall(self):
-        if(self.mod.make_call("10000")):
+    def testInteractionWithCall(self):  
+        if(self.mod.make_call(Configs("common").get("sdevice_num","Telephony"))):
             self.mod.interaction(int(self.mod.dicttesttimes.get('ITERATIONS'.lower())))
             self.mod.end_call()
             

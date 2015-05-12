@@ -20,8 +20,8 @@ class Chrome(Common):
             self.device(resourceId="com.android.chrome:id/terms_accept").click()
             if self.device(resourceId="com.android.chrome:id/positive_button").wait.exists(timeout=5000):
                 self.device(resourceId="com.android.chrome:id/positive_button").click()
-            if self.device(text="No, thanks").wait.exists(timeout=5000):
-                self.device(text="No, thanks").click()
+            if self.device(text="No thanks").wait.exists(timeout=5000):
+                self.device(text="No thanks").click()
         if self.device(resourceId=self.appconfig.id("id_location_bar","Chrome")).wait.exists(timeout=self.timeout):
             return True
         else:
@@ -31,8 +31,10 @@ class Chrome(Common):
         self.enter()
         for web in self.config.get("Browser","setup").split(","):      
             bookmark = [
-                        {"id":"description","content":["text Accept & continue","Next","No thanks"],"assert":False},
-                        {"id":"meta","content":"chrome_webpage","action":{"param":[web]}},               
+#                         {"id":"text","content":["Accept & continue"],"assert":False},
+#                         {"id":"text","content":["Next"],"assert":False},    
+#                         {"id":"text","content":["No thanks"],"assert":False},                                  
+                        {"id":"meta","content":"chrome_webpage","action":{"param":[web],"assert":False}},               
                         {"id":"description","content":["More options","Bookmark this page"]},
                         {"id":{"text":"Save"}},
                         {"id":"meta","content":"back_to_chrome"}
@@ -95,10 +97,11 @@ class Chrome(Common):
         """browser webpage
         """ 
         #widget position:the edit area of website 
-        url_text = self.device(className='android.widget.EditText',resourceId=self.appconfig.id("id_url_bar","Chrome")) 
-        if url_text.wait.exists(timeout=self.timeout):    
-            url_text.set_text(website)
-            self.device.delay(3)
+        if self.device(resourceId=self.appconfig.id("id_url_bar","Chrome")).wait.exists(timeout=self.timeout):          
+            self.device(resourceId=self.appconfig.id("id_url_bar","Chrome")).click()
+            self.logger.debug('url ...click')
+            self.device(resourceId=self.appconfig.id("id_url_bar","Chrome")).set_text(website)
+            self.device.delay(5)
             self.device.press.enter()
             self.device.delay(1)
             self.logger.debug('loading...')
@@ -295,6 +298,6 @@ class Chrome(Common):
                 self.enter()  
         return True
 if __name__ == '__main__':
-    a = Chrome("a7ffc62c","Chrome")
+    a = Chrome("f8e3ecd8","Chrome")
     a.setup()
     
